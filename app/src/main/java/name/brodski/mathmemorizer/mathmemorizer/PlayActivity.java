@@ -31,7 +31,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
 
         PlayMultipleChoiceFragment fragment = PlayMultipleChoiceFragment.newInstance(new CharSequence[]{"1", "2", "3", "4"});
 
-        fragment.setArguments(getIntent().getExtras());
+        // fragment.setArguments(getIntent().getExtras());
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_choice, fragment).commit();
 
     }
