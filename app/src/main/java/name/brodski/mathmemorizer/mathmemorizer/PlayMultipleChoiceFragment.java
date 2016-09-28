@@ -3,6 +3,7 @@ package name.brodski.mathmemorizer.mathmemorizer;
 import android.content.Context;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
 import android.support.v4.app.Fragment;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -26,19 +27,23 @@ import java.util.Arrays;
  */
 public class PlayMultipleChoiceFragment extends Fragment {
     private static final String ARG_CHOICES = "choices";
-
+    private static final String ARG_ANSWER = "answer";
+    private Handler mHandler = new Handler();
     private CharSequence[] mChoices;
+    private int mAnswer;
 
     private OnFragmentInteractionListener mListener;
+    private Button mAnswerButton;
 
     public PlayMultipleChoiceFragment() {
         // Required empty public constructor
     }
 
-    public static PlayMultipleChoiceFragment newInstance(CharSequence[] choices) {
+    public static PlayMultipleChoiceFragment newInstance(CharSequence[] choices, int answer) {
         PlayMultipleChoiceFragment fragment = new PlayMultipleChoiceFragment();
         Bundle args = new Bundle();
         args.putCharSequenceArray(ARG_CHOICES, choices);
+        args.putInt(ARG_ANSWER, answer);
         fragment.setArguments(args);
         return fragment;
     }
@@ -48,6 +53,7 @@ public class PlayMultipleChoiceFragment extends Fragment {
         super.onCreate(savedInstanceState);
         if (getArguments() != null) {
             mChoices = getArguments().getCharSequenceArray(ARG_CHOICES);
+            mAnswer = getArguments().getInt(ARG_ANSWER);
         }
     }
 
@@ -95,17 +101,60 @@ public class PlayMultipleChoiceFragment extends Fragment {
                 Button button = new Button(getActivity());
                 TableRow.LayoutParams layoutParams = new TableRow.LayoutParams(TableRow.LayoutParams.MATCH_PARENT, TableRow.LayoutParams.MATCH_PARENT);
                 layoutParams.setMargins(marginPx, marginPx, marginPx, marginPx);
-                button.setText(mChoices[column + row * columns]);
+                final int index = column + row * columns;
+                button.setText(mChoices[index]);
+                button.setOnClickListener(new View.OnClickListener() {
+                    @Override
+                    public void onClick(View v) {
+                        if (index == mAnswer) {
+                            correctAnswer();
+                        } else {
+                            wrongAnswer(v);
+                        }
+                    }
+                });
+                if (index == mAnswer) {
+                    mAnswerButton = button;
+                }
                 tableRow.addView(button, layoutParams);
             }
             layout.addView(tableRow);
         }
     }
 
-    // TODO: Rename method, update argument and hook method into UI event
-    public void onButtonPressed(Uri uri) {
+    private void correctAnswer() {
+        mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isRemoving()) {
+                    return;
+                }
+                if (mListener != null) {
+                    mListener.onAnswer(true);
+                }
+            }
+        }, 500);
         if (mListener != null) {
-            mListener.onFragmentInteraction(uri);
+            mListener.onStopTimer(true);
+        }
+    }
+    private void wrongAnswer(View view) {
+        mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
+        view.setEnabled(false);
+        mHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isRemoving()) {
+                    return;
+                }
+                if (mListener != null) {
+                    mListener.onAnswer(false);
+                }
+            }
+        }, 3000);
+        if (mListener != null) {
+            mListener.onStopTimer(false);
         }
     }
 
@@ -126,18 +175,8 @@ public class PlayMultipleChoiceFragment extends Fragment {
         mListener = null;
     }
 
-    /**
-     * This interface must be implemented by activities that contain this
-     * fragment to allow an interaction in this fragment to be communicated
-     * to the activity and potentially other fragments contained in that
-     * activity.
-     * <p/>
-     * See the Android Training lesson <a href=
-     * "http://developer.android.com/training/basics/fragments/communicating.html"
-     * >Communicating with Other Fragments</a> for more information.
-     */
     public interface OnFragmentInteractionListener {
-        // TODO: Update argument type and name
-        void onFragmentInteraction(Uri uri);
+        void onAnswer(boolean correct);
+        void onStopTimer(boolean correct);
     }
 }

@@ -2,22 +2,30 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 
     <group android:checkableBehavior="single">
+<!--
         <item
             android:id="@+id/nav_camera"
             android:icon="@drawable/ic_menu_camera"
-            android:title="Import" />
+            android:title="Import"
+            android:onClick="onImport"
+            />
+-->
         <item
-            android:id="@+id/nav_gallery"
-            android:icon="@drawable/ic_menu_gallery"
-            android:title="Gallery" />
+            android:id="@+id/db_admin"
+            android:icon="@drawable/ic_menu_manage"
+            android:title="DB-Admin"
+            android:onClick="onDbAdmin"/>
         <item
             android:id="@+id/nav_slideshow"
             android:icon="@drawable/ic_menu_slideshow"
-            android:title="Slideshow" />
+            android:title="Regenerate data"
+            android:onClick="onRegenerateData"/>
+<!--
         <item
             android:id="@+id/nav_manage"
             android:icon="@drawable/ic_menu_manage"
             android:title="Tools" />
+-->
     </group>
 
     <item android:title="Communicate">

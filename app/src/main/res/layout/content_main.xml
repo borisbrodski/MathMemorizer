@@ -16,7 +16,7 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Results"
+        android:text="Stats"
         android:id="@+id/textView2"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
@@ -34,15 +34,14 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Days"
-                android:id="@+id/textViewLabelDays" />
+                android:text="Questions learning"
+                android:id="@+id/textViewLabelQuestionsLearning" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:id="@+id/textViewDays"
-                android:text="123" />
+                android:id="@+id/textViewQuestionsLearning" />
         </TableRow>
 
         <TableRow android:paddingTop="50px">
@@ -50,15 +49,43 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="Memorized"
-                android:id="@+id/textViewLabelMemorized" />
+                android:text="Questions learned"
+                android:id="@+id/textViewLabelQuestionsLearned" />
 
             <TextView
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:textAppearance="?android:attr/textAppearanceMedium"
-                android:text="23"
-                android:id="@+id/textViewMemorized" />
+                android:id="@+id/textViewQuestionsLearned" />
+        </TableRow>
+
+        <TableRow android:paddingTop="50px">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Questions to learn"
+                android:id="@+id/textViewLabelQuestionsToLearn" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:id="@+id/textViewQuestionsToLearn" />
+        </TableRow>
+        <TableRow android:paddingTop="50px">
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:text="Due questions"
+                android:id="@+id/textViewLabelDueQuestions" />
+
+            <TextView
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:textAppearance="?android:attr/textAppearanceMedium"
+                android:id="@+id/textViewDueQuestions" />
         </TableRow>
     </TableLayout>
 

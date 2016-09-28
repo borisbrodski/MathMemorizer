@@ -19,15 +19,29 @@
         android:layout_centerVertical="true"
         android:layout_centerHorizontal="true">
 
+        <ProgressBar
+            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/progressBar"
+            android:layout_weight="0.14"
+            android:max="100"
+            android:visibility="invisible" />
+
         <TextView
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:textAppearance="?android:attr/textAppearanceLarge"
             android:text="Large Text"
-            android:id="@+id/textView3"
+            android:id="@+id/textViewTask"
             android:layout_gravity="center"
             android:layout_weight="1"
             android:gravity="center" />
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:id="@+id/textViewDebug" />
 
         <FrameLayout
             android:id="@+id/fragment_container_choice"
