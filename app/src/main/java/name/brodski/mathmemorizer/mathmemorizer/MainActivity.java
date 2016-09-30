@@ -1,9 +1,11 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
+import android.support.v7.app.AlertDialog;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -76,6 +78,10 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onResume() {
         super.onResume();
+        updateStats();
+    }
+
+    private void updateStats() {
         textViewLabelQuestionsLearned.setText("" + DB.getLearnedTasksCount());
         textViewLabelQuestionsLearning.setText("" + DB.getLearningTasksCount());
         textViewLabelQuestionsToLearn.setText("" + DB.getToLearnTasksCount());
@@ -207,11 +213,43 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onDbAdmin(MenuItem item) {
+        closeDrawer();
         Intent dbmanager = new Intent(this,AndroidDatabaseManager.class);
         startActivity(dbmanager);
     }
     public void onRegenerateData(MenuItem item) {
-        TaskGenerator.generateTasks(this);
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("DELETING ALL DATA")
+                .setMessage("ALLE DATEN WERDEN GELÖSCHT. FORTFAHREN?")
+                .setPositiveButton("Löschen", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        TaskGenerator.generateTasks(MainActivity.this);
+                        updateStats();
+                    }
+                })
+                .setNegativeButton("Zurück", null)
+                .show();
+        closeDrawer();
+    }
+
+    public void onDueAllTasks(MenuItem item) {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("Due all tasks")
+                .setMessage("Alle Aufgaben müssen wiederholt werden. Fortfahren?")
+                .setPositiveButton("Ja", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        DB.dueAllTasks();
+                        updateStats();
+                    }
+                })
+                .setNegativeButton("Zurück", null)
+                .show();
         closeDrawer();
     }
 }

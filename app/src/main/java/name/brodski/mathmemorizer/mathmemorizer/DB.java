@@ -63,4 +63,10 @@ public class DB {
         builder.where(TaskDao.Properties.Due.lt(System.currentTimeMillis()));
         return builder.count();
     }
+
+    public static void dueAllTasks() {
+        daoSession.getDatabase().execSQL("UPDATE " + TaskDao.TABLENAME + //
+                " SET " + TaskDao.Properties.Due.columnName + " = ?" + //
+                " WHERE " + TaskDao.Properties.LastShow.columnName + " <> 0", new Object[] {System.currentTimeMillis()});
+    }
 }

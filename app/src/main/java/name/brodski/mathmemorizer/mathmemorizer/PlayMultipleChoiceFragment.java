@@ -152,7 +152,7 @@ public class PlayMultipleChoiceFragment extends Fragment {
                     mListener.onAnswer(false);
                 }
             }
-        }, 3000);
+        }, 6000);
         if (mListener != null) {
             mListener.onStopTimer(false);
         }

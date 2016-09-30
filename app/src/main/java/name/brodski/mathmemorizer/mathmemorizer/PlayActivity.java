@@ -110,14 +110,14 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         }
 
         int count = 4;
-        mDeadline = 100;
+        mDeadline = 20;
         if (task.getScore() > 1 && choices.size() >= 5) {
             count = 6;
             mDeadline += 30;
-        } else if (task.getScore() > 3 && choices.size() >= 8) {
-            mDeadline += 60;
+        }/* else if (task.getScore() > 3 && choices.size() >= 8) {
+            mDeadline += 45;
             count = 9;
-        }
+        }*/
         mDeadline *= PROGRESS_UPDATES_IN_SEC;
         mProgressCounter = 0;
 
