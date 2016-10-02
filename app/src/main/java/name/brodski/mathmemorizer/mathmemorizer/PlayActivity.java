@@ -3,8 +3,11 @@ package name.brodski.mathmemorizer.mathmemorizer;
 import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
@@ -19,6 +22,7 @@ import java.util.Collection;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
@@ -50,6 +54,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     private TextView textViewLessonName;
     private boolean isPaused = true;
     private int successTaskCount;
+    private TextToSpeech ttobj;
+    private String toSpeak;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -59,6 +65,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         setContentView(R.layout.activity_play);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
+
+        setResult(MainActivity.RESULT_CANCELED);
 
 /*
         FloatingActionButton fab = (FloatingActionButton) findViewById(R.id.fab);
@@ -80,6 +88,19 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         textViewLessonName.setText(lesson.getName());
         // fragment.setArguments(getIntent().getExtras());
 
+        ttobj = new TextToSpeech(getApplicationContext(), new TextToSpeech.OnInitListener() {
+            @Override
+            public void onInit(int status) {
+                if (status == TextToSpeech.SUCCESS) {
+                    ttobj.setLanguage(Locale.GERMANY);
+
+                } else {
+                    Toast.makeText(PlayActivity.this, "TTS Initilization Failed", Toast.LENGTH_LONG).show();
+                }
+            }
+        }, "com.google.android.tts");
+
+
         task = nextTask();
         showTask();
     }
@@ -98,9 +119,11 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             op1 = task.getOperand2();
             op2 = task.getOperand1();
         }
+        int result = op1 * op2;
+
+        toSpeak = ""  + op1 + " mal " + op2 + " ist " + result;
         textViewTask.setText("" + op1 + " * " + op2 + " = ?");
 
-        int result = op1 * op2;
         Set<String> choices = new HashSet<>();
         addChoice(choices, result - 3);
         addChoice(choices, result - 2);
@@ -315,6 +338,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             task = nextTask();
             showTask();
         } else {
+            setResult(MainActivity.RESULT_AUTOSTART);
             finish();
         }
     }
@@ -323,5 +347,9 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     public void onStopTimer(boolean correct) {
         mDeadline = 0;
         progressBar.setVisibility(View.INVISIBLE);
+    }
+
+    public void speakTask() {
+        ttobj.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
     }
 }

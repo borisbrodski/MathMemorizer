@@ -68,6 +68,7 @@ public class DB {
         builder.where(TaskDao.Properties.LessonId.eq(lesson.getId()));
         builder.where(TaskDao.Properties.Due.notEq(0L));
         builder.where(TaskDao.Properties.Due.lt(System.currentTimeMillis()));
+        builder.where(TaskDao.Properties.Score.ge(lesson.getLevel3MinScore()));
         return builder.count();
     }
 

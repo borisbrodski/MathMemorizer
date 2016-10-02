@@ -1,9 +1,12 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
+import android.os.Handler;
+import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
 import android.util.Log;
@@ -34,6 +37,9 @@ public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
     public static final int LESSON_ID_OFFSET = 10000;
+    public static final int RESULT_CANCELED = 1;
+    public static final int RESULT_AUTOSTART = 2;
+    public static final int AUTOSTART_SECONDS = 30;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -49,6 +55,10 @@ public class MainActivity extends AppCompatActivity
     private Lesson lesson;
     private MenuItem lessonMenuItem;
     private List<Lesson> lessons;
+
+    private ProgressDialog autostartDialog;
+    private int autostartSeconds;
+    private Handler autostartHandler = new Handler();
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -116,6 +126,46 @@ public class MainActivity extends AppCompatActivity
     protected void onResume() {
         super.onResume();
         updateStats();
+    }
+
+    private void startAutostart() {
+        autostartSeconds = AUTOSTART_SECONDS;
+
+        autostartDialog = new ProgressDialog(this);
+        autostartDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        autostartDialog.setMessage(getAutostartMessage());
+        autostartDialog.setIndeterminate(true);
+        autostartDialog.setCanceledOnTouchOutside(false);
+        autostartDialog.show();
+
+        autostartHandlerStart();
+    }
+
+    private void autostartHandlerStart() {
+        autostartHandler.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isFinishing()) {
+                    return;
+                }
+                autostartSeconds--;
+                if (autostartSeconds == 0) {
+                    autostartDialog.hide();
+                    onPlay(null);
+                } else {
+                    autostartDialog.setMessage(getAutostartMessage());
+                    if (autostartSeconds <= 5) {
+                        Sound.GET_READY.play(MainActivity.this);
+                    }
+                    autostartHandlerStart();
+                }
+            }
+        }, 1000);
+    }
+
+    @NonNull
+    private String getAutostartMessage() {
+        return "PAUSE: " + autostartSeconds + " sec.";
     }
 
     private void updateStats() {
@@ -242,7 +292,15 @@ public class MainActivity extends AppCompatActivity
         Bundle args = new Bundle();
         args.putLong(PlayActivity.LESSON_ID, lesson.getId());
         intent.putExtras(args);
-        startActivity(intent);
+        startActivityForResult(intent, 0);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+        if (resultCode == RESULT_AUTOSTART) {
+            startAutostart();
+        }
     }
 
     /**

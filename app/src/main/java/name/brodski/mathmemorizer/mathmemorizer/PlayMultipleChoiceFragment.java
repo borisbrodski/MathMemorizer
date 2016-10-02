@@ -141,7 +141,12 @@ public class PlayMultipleChoiceFragment extends Fragment {
         }
     }
     void wrongAnswer(View view) {
-        Sound.ERROR.play(getActivity());
+        Sound.ERROR.play(getActivity(), new Runnable() {
+            @Override
+            public void run() {
+                mListener.speakTask();
+            }
+        });
         mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
         if (view != null) {
             view.setEnabled(false);
@@ -182,5 +187,6 @@ public class PlayMultipleChoiceFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         void onAnswer(boolean correct);
         void onStopTimer(boolean correct);
+        void speakTask();
     }
 }
