@@ -6,6 +6,7 @@ import android.net.Uri;
 import android.os.Bundle;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -22,32 +23,47 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.util.Collections;
+import java.util.Comparator;
+import java.util.List;
+
+import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskGenerator;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
+    public static final int LESSON_ID_OFFSET = 10000;
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
      */
     private GoogleApiClient client;
+    private TextView textViewLesson;
     private TextView textViewLabelQuestionsLearned;
     private TextView textViewLabelQuestionsLearning;
     private TextView textViewLabelQuestionsToLearn;
     private TextView textViewDueQuestions;
+    private TextView textViewDebug;
+
+    private Lesson lesson;
+    private MenuItem lessonMenuItem;
+    private List<Lesson> lessons;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         DB.init(this);
+        DB.generateLessionsIfEmpty();
 
         setContentView(R.layout.activity_main);
+        textViewLesson = (TextView)findViewById(R.id.textViewLesson);
         textViewLabelQuestionsLearned = (TextView)findViewById(R.id.textViewQuestionsLearned);
         textViewLabelQuestionsLearning = (TextView)findViewById(R.id.textViewQuestionsLearning);
         textViewLabelQuestionsToLearn = (TextView)findViewById(R.id.textViewQuestionsToLearn);
         textViewDueQuestions = (TextView)findViewById(R.id.textViewDueQuestions);
+        textViewDebug = (TextView)findViewById(R.id.textViewDebug);
 
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -67,8 +83,29 @@ public class MainActivity extends AppCompatActivity
         drawer.setDrawerListener(toggle);
         toggle.syncState();
 
+
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
+
+        Menu menu = navigationView.getMenu();
+        lessons = DB.getDaoSession().getLessonDao().loadAll();
+        Collections.sort(lessons, new Comparator<Lesson>() {
+            @Override
+            public int compare(Lesson o1, Lesson o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
+        for (int i = 0; i < lessons.size(); i++) {
+            Lesson lesson = lessons.get(i);
+            MenuItem item = menu.add(R.id.group_lessons, LESSON_ID_OFFSET + i, Menu.NONE, lesson.getName());
+            if (lessonMenuItem == null) {
+                lessonMenuItem = item;
+                item.setChecked(true);
+                this.lesson = lesson;
+            }
+        }
+
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -82,10 +119,32 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void updateStats() {
-        textViewLabelQuestionsLearned.setText("" + DB.getLearnedTasksCount());
-        textViewLabelQuestionsLearning.setText("" + DB.getLearningTasksCount());
-        textViewLabelQuestionsToLearn.setText("" + DB.getToLearnTasksCount());
-        textViewDueQuestions.setText("" + DB.getDueTasksCount());
+        if (lesson == null) {
+            textViewLesson.setText(lesson.getName());
+            textViewLabelQuestionsLearned.setText("");
+            textViewLabelQuestionsLearning.setText("");
+            textViewLabelQuestionsToLearn.setText("");
+            textViewDueQuestions.setText("");
+            textViewDebug.setText("");
+            return;
+        }
+        textViewLesson.setText(lesson.getName());
+        textViewLabelQuestionsLearned.setText("" + DB.getLearnedTasksCount(lesson));
+        textViewLabelQuestionsLearning.setText("" + DB.getLearningTasksCount(lesson));
+        textViewLabelQuestionsToLearn.setText("" + DB.getToLearnTasksCount(lesson));
+        textViewDueQuestions.setText("" + DB.getDueTasksCount(lesson));
+        StringBuilder sb = new StringBuilder();
+        sb.append("Millis: ");
+        sb.append(lesson.getLevel1Millis());
+        sb.append(", ");
+        sb.append(lesson.getLevel2Millis());
+        sb.append(", ");
+        sb.append(lesson.getLevel3Millis());
+        sb.append("\nMinScores: ");
+        sb.append(lesson.getLevel2MinScore());
+        sb.append(", ");
+        sb.append(lesson.getLevel3MinScore());
+        textViewDebug.setText(sb.toString());
     }
 
     @Override
@@ -140,6 +199,13 @@ public class MainActivity extends AppCompatActivity
 
         }
 */
+        if (item.getItemId() >= LESSON_ID_OFFSET && item.getItemId() < LESSON_ID_OFFSET + lessons.size()) {
+            lessonMenuItem.setChecked(false);
+            item.setChecked(true);
+            lesson = lessons.get(item.getItemId() - LESSON_ID_OFFSET);
+            lessonMenuItem = item;
+            updateStats();
+        }
         closeDrawer();
         return true;
     }
@@ -173,6 +239,9 @@ public class MainActivity extends AppCompatActivity
 //        Snackbar.make(view, "Starting to play", Snackbar.LENGTH_LONG)
 //                .setAction("Action", null).show();
         Intent intent = new Intent(this, PlayActivity.class);
+        Bundle args = new Bundle();
+        args.putLong(PlayActivity.LESSON_ID, lesson.getId());
+        intent.putExtras(args);
         startActivity(intent);
     }
 
@@ -220,13 +289,13 @@ public class MainActivity extends AppCompatActivity
     public void onRegenerateData(MenuItem item) {
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("DELETING ALL DATA")
+                .setTitle("DELETING ALL DATA (lessons + tasks)")
                 .setMessage("ALLE DATEN WERDEN GELÖSCHT. FORTFAHREN?")
                 .setPositiveButton("Löschen", new DialogInterface.OnClickListener()
                 {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        TaskGenerator.generateTasks(MainActivity.this);
+                        TaskGenerator.generateTasks(MainActivity.this, lesson);
                         updateStats();
                     }
                 })
@@ -238,13 +307,13 @@ public class MainActivity extends AppCompatActivity
     public void onDueAllTasks(MenuItem item) {
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("Due all tasks")
+                .setTitle("Due all tasks for '" + lesson.getName() + "'")
                 .setMessage("Alle Aufgaben müssen wiederholt werden. Fortfahren?")
                 .setPositiveButton("Ja", new DialogInterface.OnClickListener()
                 {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
-                        DB.dueAllTasks();
+                        DB.dueAllTasks(lesson);
                         updateStats();
                     }
                 })

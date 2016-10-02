@@ -33,6 +33,10 @@
 -->
     </group>
 
+    <group android:id="@+id/group_lessons">
+
+    </group>
+<!--
     <item android:title="Communicate">
         <menu>
             <item
@@ -45,5 +49,6 @@
                 android:title="Send" />
         </menu>
     </item>
+-->
 
 </menu>

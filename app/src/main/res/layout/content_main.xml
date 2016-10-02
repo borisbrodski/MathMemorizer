@@ -16,15 +16,14 @@
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:textAppearance="?android:attr/textAppearanceLarge"
-        android:text="Stats"
-        android:id="@+id/textView2"
+        android:id="@+id/textViewLesson"
         android:layout_alignParentTop="true"
         android:layout_centerHorizontal="true" />
 
     <TableLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_below="@+id/textView2"
+        android:layout_below="@+id/textViewLesson"
         android:stretchColumns="0,1"
         android:paddingTop="50px"
         android:paddingBottom="50px">
@@ -88,5 +87,13 @@
                 android:id="@+id/textViewDueQuestions" />
         </TableRow>
     </TableLayout>
+
+    <TextView
+        android:text="TextView"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:layout_alignParentBottom="true"
+        android:layout_centerHorizontal="true"
+        android:id="@+id/textViewDebug" />
 
 </RelativeLayout>

@@ -2,37 +2,52 @@ package name.brodski.mathmemorizer.mathmemorizer.data;
 
 import android.content.Context;
 import android.database.sqlite.SQLiteDatabase;
+import android.widget.Toast;
+
+import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.util.Random;
+
+import name.brodski.mathmemorizer.mathmemorizer.DB;
 
 /**
  * Created by boris on 27.09.16.
  */
 
 public class TaskGenerator {
-    public  static  void generateTasks(Context context) {
-        DaoMaster.DevOpenHelper openHelper = new DaoMaster.DevOpenHelper(context, "task-db", null);
-        SQLiteDatabase db = openHelper.getWritableDatabase();
+    public  static  void generateTasks(Context context, Lesson lesson) {
+        TaskDao taskDao = DB.getDaoSession().getTaskDao();
 
-        DaoMaster daoMaster = new DaoMaster(db);
-        DaoSession daoSession = daoMaster.newSession();
-        TaskDao taskDao = daoSession.getTaskDao();
+        DB.getDaoSession().getDatabase().execSQL("DELETE FROM " + TaskDao.TABLENAME + " WHERE " + TaskDao.Properties.LessonId.columnName + " = ?",
+                new Object[]{lesson.getId()});
 
-        taskDao.deleteAll();
-
+        int created = 0;
+        lesson = DB.getDaoSession().getLessonDao().load(lesson.getId());
         Random random = new Random();
-        for (int a = 0; a <= 9; a++) {
-            for (int b = a; b < 9; b++) {
-                Task task = new Task();
-                task.setOperand1(a);
-                task.setOperand2(b);
-                task.setLastShow(0);
-                task.setScore(0);
-                task.setOrder(random.nextInt());
+//        for (Lesson lesson : DB.getDaoSession().getLessonDao().loadAll()) {
+            for (int a = 0; a <= 9; a++) {
+                for (int b = a; b <= 9; b++) {
+//                    QueryBuilder<Task> builder = DB.getDaoSession().getTaskDao().queryBuilder();
+//                    builder.where(TaskDao.Properties.LessonId.eq(lesson.getId()));
+//                    builder.where(TaskDao.Properties.Operand1.eq(a));
+//                    builder.where(TaskDao.Properties.Operand2.eq(b));
+//                    if (builder.count() > 0) {
+//                        continue;
+//                    }
 
-                taskDao.insert(task);
+                    Task task = new Task();
+                    task.setOperand1(a);
+                    task.setOperand2(b);
+                    task.setLastShow(0);
+                    task.setScore(0);
+                    task.setOrder(random.nextInt());
+                    task.setLesson(lesson);
+
+                    taskDao.insert(task);
+                    created++;
+                }
             }
-        }
-
+//        }
+        Toast.makeText(context, "Created " + created + " tasks", Toast.LENGTH_LONG).show();
     }
 }

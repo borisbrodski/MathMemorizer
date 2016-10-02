@@ -123,6 +123,7 @@ public class PlayMultipleChoiceFragment extends Fragment {
     }
 
     private void correctAnswer() {
+        Sound.OK.play(getActivity());
         mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
         mHandler.postDelayed(new Runnable() {
             @Override
@@ -139,9 +140,12 @@ public class PlayMultipleChoiceFragment extends Fragment {
             mListener.onStopTimer(true);
         }
     }
-    private void wrongAnswer(View view) {
+    void wrongAnswer(View view) {
+        Sound.ERROR.play(getActivity());
         mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
-        view.setEnabled(false);
+        if (view != null) {
+            view.setEnabled(false);
+        }
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {

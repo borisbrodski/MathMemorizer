@@ -24,6 +24,7 @@ import java.util.Set;
 
 import name.brodski.mathmemorizer.mathmemorizer.data.DaoMaster;
 import name.brodski.mathmemorizer.mathmemorizer.data.DaoSession;
+import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
 import name.brodski.mathmemorizer.mathmemorizer.data.Task;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskDao;
 
@@ -35,20 +36,26 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     private static final int DIFFERENT_TASK_COUNT = 3;
     public static final Random RANDOM = new Random(System.currentTimeMillis());
     public static final int PROGRESS_UPDATES_IN_SEC = 10;
+    public static final String LESSON_ID = "LESSON_ID";
+    private Lesson lesson;
     private Task task;
     private PlayMultipleChoiceFragment fragment;
     private TextView textViewTask;
     private ProgressBar progressBar;
-    private int mDeadline;
-    private int mProgressCounter;
+    private long mDeadline;
+    private long mProgressCounter;
     private Handler handler = new Handler();
-    private DaoSession daoSession;
     private TextView textViewDebug;
     private List<Long> lastTaskIds = new ArrayList<>();
+    private TextView textViewLessonName;
+    private boolean isPaused = true;
+    private int successTaskCount;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        Long lessionId = getIntent().getExtras().getLong(LESSON_ID);
+        lesson = DB.getDaoSession().getLessonDao().load(lessionId);
         setContentView(R.layout.activity_play);
         Toolbar toolbar = (Toolbar) findViewById(R.id.toolbar);
         setSupportActionBar(toolbar);
@@ -63,12 +70,14 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             }
         });
 */
-        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
+//        getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
         textViewTask = (TextView)findViewById(R.id.textViewTask);
         progressBar = (ProgressBar) findViewById(R.id.progressBar);
         textViewDebug = (TextView)findViewById(R.id.textViewDebug);
+        textViewLessonName = (TextView)findViewById(R.id.textViewLessonName);
 
+        textViewLessonName.setText(lesson.getName());
         // fragment.setArguments(getIntent().getExtras());
 
         task = nextTask();
@@ -109,16 +118,18 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             }
         }
 
-        int count = 4;
-        mDeadline = 20;
-        if (task.getScore() > 1 && choices.size() >= 5) {
+        int count;
+
+        if (task.getScore() >= lesson.getLevel3MinScore() && choices.size() >= 6) {
             count = 6;
-            mDeadline += 30;
-        }/* else if (task.getScore() > 3 && choices.size() >= 8) {
-            mDeadline += 45;
-            count = 9;
-        }*/
-        mDeadline *= PROGRESS_UPDATES_IN_SEC;
+            mDeadline = lesson.getLevel3Millis();;
+        } else if (task.getScore() >= lesson.getLevel2MinScore() && choices.size() >= 6) {
+            count = 6;
+            mDeadline = lesson.getLevel2Millis();;
+        } else {
+            count = 4;
+            mDeadline = lesson.getLevel1Millis();
+        }
         mProgressCounter = 0;
 
 
@@ -131,7 +142,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         shuffle(choicesList, RANDOM);
 
         fragment = PlayMultipleChoiceFragment.newInstance(choicesList.toArray(new CharSequence[0]), choicesList.indexOf(resultString));
-        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_choice, fragment).commit();
+        getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_choice, fragment).commitAllowingStateLoss();
 
         progressBar.setProgress(0);
         progressBar.setVisibility(View.VISIBLE);
@@ -139,26 +150,35 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     @Override
+    protected void onPause() {
+        isPaused = true;
+        super.onPause();
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        isPaused = false;
+        setupProgressHandler();
+    }
+
+    @Override
     protected void onStop() {
         super.onStop();
-
-        if (daoSession != null) {
-            daoSession.getDatabase().close();
-        }
     }
 
     public void setupProgressHandler() {
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (mDeadline == 0 || isFinishing()) {
+                if (mDeadline == 0 || isPaused || isFinishing()) {
                     return;
                 }
                 if (mDeadline <= mProgressCounter) {
                     timeout();
                 } else {
-                    mProgressCounter++;
-                    progressBar.setProgress(100 *  mProgressCounter / mDeadline);
+                    mProgressCounter += 1000 / PROGRESS_UPDATES_IN_SEC;
+                    progressBar.setProgress((int)(100 *  mProgressCounter / mDeadline));
                     setupProgressHandler();
                 }
             }
@@ -172,25 +192,20 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     private Task nextTask() {
-        if (daoSession == null) {
-            DaoMaster.DevOpenHelper openHelper = new DaoMaster.DevOpenHelper(this, "task-db", null);
-            SQLiteDatabase db = openHelper.getWritableDatabase();
-
-            DaoMaster daoMaster = new DaoMaster(db);
-            daoSession = daoMaster.newSession();
-        }
-        QueryBuilder.LOG_SQL = true;
 
         // System.currentTimeMillis() - score * 1000*60*60
         // 1. First get due tasks
         // 2. Get new tasks based on order
         Task result = getDueTask(false);
         if (result == null) {
-            if (DB.getLearningTasksCount() > 5) {
+            if (DB.getLearningTasksCount(lesson) > 5) {
                 result = getDueTask(true);
             } else {
                 result = getNewTask();
             }
+        }
+        if (result == null) {
+            result = getDueTask(true);
         }
         if (result == null) {
             Toast.makeText(this, "No more tasks in the database to practice", Toast.LENGTH_SHORT).show();
@@ -217,7 +232,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     private Task getDueTask(boolean includeFuture) {
-        QueryBuilder<Task> builder = daoSession.getTaskDao().queryBuilder();
+        QueryBuilder<Task> builder = DB.getDaoSession().getTaskDao().queryBuilder();
+        builder.where(TaskDao.Properties.LessonId.eq(lesson.getId()));
         builder.where(TaskDao.Properties.Due.notEq(0L));
         if (lastTaskIds.size() > 0) {
             builder.where(TaskDao.Properties.Id.notIn(lastTaskIds));
@@ -228,15 +244,16 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
 //        builder.where(new WhereCondition.StringCondition(
 //               "T." + TaskDao.Properties.LastShow.columnName + " < (" + System.currentTimeMillis() + "-T." + TaskDao.Properties.Score.columnName + "*1000*60*60)"));
         builder.orderAsc(TaskDao.Properties.Due);
-        builder.limit(1);
+        builder.limit(10);
         List<Task> list = builder.list();
         if (list.size() == 0) {
             return null;
         }
         return list.get(0);
-    }
+    }// E-IZ 999
     private Task getNewTask() {
-        QueryBuilder<Task> builder = daoSession.getTaskDao().queryBuilder();
+        QueryBuilder<Task> builder = DB.getDaoSession().getTaskDao().queryBuilder();
+        builder.where(TaskDao.Properties.LessonId.eq(lesson.getId()));
         builder.where(TaskDao.Properties.LastShow.eq(0L));
         if (lastTaskIds.size() > 0) {
             builder.where(TaskDao.Properties.Id.notIn(lastTaskIds));
@@ -251,12 +268,14 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     private void timeout() {
-        onAnswer(false);
+        //onAnswer(false);
+        fragment.wrongAnswer(null);
     }
 
     @Override
     public void onAnswer(boolean correct) {
         if (correct) {
+            successTaskCount++;
             task.setScore(task.getScore() + 1);
             int minute = 1000*60;
             int hour = minute*60;
@@ -290,9 +309,14 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             task.setDue(System.currentTimeMillis());
         }
         task.setLastShow(System.currentTimeMillis());
-        daoSession.getTaskDao().update(task);
-        task = nextTask();
-        showTask();
+        DB.getDaoSession().getTaskDao().update(task);
+
+        if (successTaskCount < lesson.getTasksPerSession()) {
+            task = nextTask();
+            showTask();
+        } else {
+            finish();
+        }
     }
 
     @Override
