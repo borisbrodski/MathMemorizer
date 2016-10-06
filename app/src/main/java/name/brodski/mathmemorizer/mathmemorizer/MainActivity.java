@@ -142,10 +142,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void autostartHandlerStart() {
+        autostartHandler.removeCallbacksAndMessages(null);
         autostartHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isFinishing()) {
+                if (isFinishing() || !autostartDialog.isShowing()) {
                     return;
                 }
                 autostartSeconds--;

@@ -56,6 +56,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     private int successTaskCount;
     private TextToSpeech ttobj;
     private String toSpeak;
+    private String toTaskSpeak;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -121,6 +122,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         }
         int result = op1 * op2;
 
+        toTaskSpeak = ""  + op1 + " mal " + op2;
         toSpeak = ""  + op1 + " mal " + op2 + " ist " + result;
         textViewTask.setText("" + op1 + " * " + op2 + " = ?");
 
@@ -145,12 +147,13 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
 
         if (task.getScore() >= lesson.getLevel3MinScore() && choices.size() >= 6) {
             count = 6;
-            mDeadline = lesson.getLevel3Millis();;
+            mDeadline = lesson.getLevel3Millis();
         } else if (task.getScore() >= lesson.getLevel2MinScore() && choices.size() >= 6) {
             count = 6;
             mDeadline = lesson.getLevel2Millis();;
         } else {
             count = 4;
+            speakTask();
             mDeadline = lesson.getLevel1Millis();
         }
         mProgressCounter = 0;
@@ -191,6 +194,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     public void setupProgressHandler() {
+        handler.removeCallbacksAndMessages(null);
         handler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -349,7 +353,10 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         progressBar.setVisibility(View.INVISIBLE);
     }
 
-    public void speakTask() {
+    public void speakAnswer() {
         ttobj.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+    }
+    public void speakTask() {
+        ttobj.speak(toTaskSpeak, TextToSpeech.QUEUE_FLUSH, null);
     }
 }

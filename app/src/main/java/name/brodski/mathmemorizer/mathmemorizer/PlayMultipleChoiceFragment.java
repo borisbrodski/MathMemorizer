@@ -31,6 +31,7 @@ public class PlayMultipleChoiceFragment extends Fragment {
     private Handler mHandler = new Handler();
     private CharSequence[] mChoices;
     private int mAnswer;
+    private boolean waitForAnswer;
 
     private OnFragmentInteractionListener mListener;
     private Button mAnswerButton;
@@ -106,6 +107,9 @@ public class PlayMultipleChoiceFragment extends Fragment {
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
+                        if (!waitForAnswer) {
+                            return;
+                        }
                         if (index == mAnswer) {
                             correctAnswer();
                         } else {
@@ -120,11 +124,15 @@ public class PlayMultipleChoiceFragment extends Fragment {
             }
             layout.addView(tableRow);
         }
+
+        waitForAnswer = true;
     }
 
     private void correctAnswer() {
+        waitForAnswer = false;
         Sound.OK.play(getActivity());
         mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
+        mHandler.removeCallbacksAndMessages(null);
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -141,16 +149,20 @@ public class PlayMultipleChoiceFragment extends Fragment {
         }
     }
     void wrongAnswer(View view) {
+        waitForAnswer = false;
         Sound.ERROR.play(getActivity(), new Runnable() {
             @Override
             public void run() {
-                mListener.speakTask();
+                if (mListener != null) {
+                    mListener.speakAnswer();
+                }
             }
         });
         mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
         if (view != null) {
             view.setEnabled(false);
         }
+        mHandler.removeCallbacksAndMessages(null);
         mHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
@@ -187,6 +199,6 @@ public class PlayMultipleChoiceFragment extends Fragment {
     public interface OnFragmentInteractionListener {
         void onAnswer(boolean correct);
         void onStopTimer(boolean correct);
-        void speakTask();
+        void speakAnswer();
     }
 }
