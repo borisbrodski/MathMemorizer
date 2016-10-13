@@ -1,9 +1,22 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
 import android.content.Context;
+import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
+import android.util.JsonReader;
+import android.util.JsonWriter;
+import android.widget.Toast;
 
+import org.greenrobot.greendao.Property;
 import org.greenrobot.greendao.query.QueryBuilder;
+
+import java.io.IOException;
+import java.io.StringReader;
+import java.io.StringWriter;
+import java.io.Writer;
+import java.lang.reflect.Field;
+import java.nio.channels.Channels;
+import java.util.function.Consumer;
 
 import name.brodski.mathmemorizer.mathmemorizer.data.DaoMaster;
 import name.brodski.mathmemorizer.mathmemorizer.data.DaoSession;
@@ -133,4 +146,178 @@ public class DB {
 
         DB.getDaoSession().getLessonDao().insert(lesson);
     }
+
+
+    interface Getter<T> {T get(Task t);}
+    interface Setter<T> {void set(Task t, T v);}
+    private static class PropertyInfo<T> {
+        public Property property;
+        public Getter<T> getter;
+        public Setter<T> setter;
+        public Class<T> type;
+
+        public PropertyInfo(Class<T> type, Property property, Getter<T> getter, Setter<T> setter) {
+            this.type = type;
+            this.property = property;
+            this.getter = getter;
+            this.setter = setter;
+        }
+    }
+    static PropertyInfo[] propertyInfos = new PropertyInfo[] {
+        new PropertyInfo<Long>(Long.class, TaskDao.Properties.Due, new Getter<Long>() {
+            @Override
+            public Long get(Task t) {
+                return t.getDue();
+            }
+        },
+        new Setter<Long>() {
+            @Override
+            public void set(Task t, Long v) {
+                t.setDue(v);
+            }
+        }),
+
+
+        new PropertyInfo<Long>(Long.class, TaskDao.Properties.LastShow, new Getter<Long>() {
+            @Override
+            public Long get(Task t) {
+                return t.getLastShow();
+            }
+        },
+        new Setter<Long>() {
+            @Override
+            public void set(Task t, Long v) {
+                t.setLastShow(v);
+            }
+        }),
+
+        new PropertyInfo<Integer>(Integer.class, TaskDao.Properties.Operand1, new Getter<Integer>() {
+            @Override
+            public Integer get(Task t) {
+                return t.getOperand1();
+            }
+        },
+        new Setter<Integer>() {
+            @Override
+            public void set(Task t, Integer v) {
+                t.setOperand1(v);
+            }
+        }),
+
+
+
+        new PropertyInfo<Integer>(Integer.class, TaskDao.Properties.Operand2, new Getter<Integer>() {
+            @Override
+            public Integer get(Task t) {
+                return t.getOperand2();
+            }
+        },
+        new Setter<Integer>() {
+            @Override
+            public void set(Task t, Integer v) {
+                t.setOperand2(v);
+            }
+        }),
+
+
+        new PropertyInfo<Integer>(Integer.class, TaskDao.Properties.Order, new Getter<Integer>() {
+            @Override
+            public Integer get(Task t) {
+                return t.getOrder();
+            }
+        },
+        new Setter<Integer>() {
+            @Override
+            public void set(Task t, Integer v) {
+                t.setOrder(v);
+            }
+        }),
+
+
+        new PropertyInfo<Integer>(Integer.class, TaskDao.Properties.Score, new Getter<Integer>() {
+            @Override
+            public Integer get(Task t) {
+                return t.getScore();
+            }
+        },
+        new Setter<Integer>() {
+            @Override
+            public void set(Task t, Integer v) {
+                t.setScore(v);
+            }
+        }),
+
+
+
+    };
+    public static String dump(Lesson lesson, Context context) {
+
+        StringWriter fw = new StringWriter();
+        JsonWriter writer = new JsonWriter(fw);
+        try {
+            writer.beginArray();
+            QueryBuilder<Task> builder = daoSession.getTaskDao().queryBuilder();
+            builder.where(TaskDao.Properties.LessonId.eq(lesson.getId()));
+            for (Task task : builder.list()) {
+                writer.beginObject();
+                for (PropertyInfo<?> propertyInfo : propertyInfos) {
+                    writer.name(propertyInfo.property.name);
+                    writer.value(propertyInfo.getter.get(task).toString());
+
+                }
+                writer.endObject();
+            }
+            writer.endArray();
+            writer.close();
+        } catch (IOException e) {
+            Toast.makeText(context, "ERROR: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+
+        return fw.toString();
+    }
+    public static void restore(Lesson lesson, Context context, CharSequence text) {
+        daoSession.getDatabase().execSQL("DELETE FROM " + TaskDao.TABLENAME + " WHERE " + TaskDao.Properties.LessonId.columnName + " = ?",
+                new Object[]{lesson.getId()});
+
+        TaskDao taskDao = daoSession.getTaskDao();
+
+        int imported = 0;
+        JsonReader reader = new JsonReader(new StringReader(text.toString()));
+        try {
+            reader.beginArray();
+            while (reader.hasNext()) {
+                reader.beginObject();
+
+                Task task = new Task();
+                task.setLesson(lesson);
+                while (reader.hasNext()) {
+                    String name = reader.nextName();
+                    for (PropertyInfo<?> propertyInfo : propertyInfos) {
+                        if (propertyInfo.property.name.equals(name)) {
+                            if (propertyInfo.type == Long.class) {
+                                ((PropertyInfo<Long>)propertyInfo).setter.set(task, (Long)reader.nextLong());
+                            } else if (propertyInfo.type == Integer.class) {
+                                ((PropertyInfo<Integer>)propertyInfo).setter.set(task, (Integer)reader.nextInt());
+                            }
+                            break;
+                        }
+
+                    }
+
+                }
+
+                taskDao.insert(task);
+                imported++;
+
+                reader.endObject();
+            }
+            reader.endArray();
+            Toast.makeText(context, "Imported " + imported + " tasks", Toast.LENGTH_LONG).show();
+        } catch (IOException e) {
+            Toast.makeText(context, "ERROR: " + e.getMessage(), Toast.LENGTH_LONG).show();
+            e.printStackTrace();
+        }
+    }
+
 }

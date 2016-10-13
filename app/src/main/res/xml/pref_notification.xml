@@ -1,0 +1,52 @@
+<PreferenceScreen
+    xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:auto="http://schemas.android.com/apk/res-auto">
+
+    <!-- A 'parent' preference, which enables/disables child preferences (below)
+         when checked/unchecked. -->
+    <SwitchPreference
+        android:defaultValue="true"
+        android:key="notifications_enabled"
+        android:title="@string/pref_title_notifications" />
+
+    <!-- Allows the user to choose a ringtone in the 'notification' category. -->
+    <!-- NOTE: This preference will be enabled only when the checkbox above is checked. -->
+    <!-- NOTE: RingtonePreference's summary should be set to its value by the activity code. -->
+    <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
+        android:key="notifications_ringtone_correct_answer"
+        android:title="@string/pref_title_ringtone_correct_answer"
+        android:defaultValue="ok3"
+        auto:ringtoneType="notification"
+        auto:showSilent="true"
+        auto:showDefault="true"
+        auto:extraRingtones="@array/extra_ringtones"
+        auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
+    <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
+        android:key="notifications_ringtone_wrong_answer"
+        android:title="@string/pref_title_ringtone_wrong_answer"
+        android:defaultValue="error"
+        auto:ringtoneType="notification"
+        auto:showSilent="true"
+        auto:showDefault="true"
+        auto:extraRingtones="@array/extra_ringtones"
+        auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
+    <!-- android.resource://name.brodski.mathmemorizer.mathmemorizer/2131165185 -->
+    <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
+        android:key="notifications_ringtone_starting_alarm"
+        android:title="@string/pref_title_ringtone_starting_alarm"
+        android:defaultValue="default"
+        auto:ringtoneType="notification"
+        auto:showSilent="true"
+        auto:showDefault="true"
+        auto:extraRingtones="@array/extra_ringtones"
+        auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
+    <!-- NOTE: This preference will be enabled only when the checkbox above is checked. -->
+<!--
+    <SwitchPreference
+        android:defaultValue="true"
+        android:dependency="notifications_enabled"
+        android:key="notifications_new_message_vibrate"
+        android:title="@string/pref_title_vibrate" />
+-->
+
+</PreferenceScreen>

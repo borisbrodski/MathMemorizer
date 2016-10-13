@@ -25,6 +25,14 @@
             android:icon="@drawable/ic_menu_slideshow"
             android:title="Regenerate data"
             android:onClick="onRegenerateData"/>
+        <item
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Share DB"
+            android:onClick="onSendDB"/>
+        <item
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="Import from clipboard"
+            android:onClick="onImportFromClipboard"/>
 <!--
         <item
             android:id="@+id/nav_manage"

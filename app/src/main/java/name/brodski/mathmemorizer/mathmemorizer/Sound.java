@@ -1,58 +1,81 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
 import android.content.Context;
+import android.content.SharedPreferences;
+import android.media.AudioAttributes;
 import android.media.MediaPlayer;
+import android.media.Ringtone;
+import android.media.RingtoneManager;
+import android.net.Uri;
+import android.preference.PreferenceManager;
+import android.support.v4.app.NotificationCompat;
 
 import java.util.Random;
+
+import static android.R.attr.resource;
 
 /**
  * Created by boris on 02.10.16.
  */
 
 public enum Sound {
-    OK(R.raw.ok3),
-    GET_READY(R.raw.get_ready),
-    ERROR(R.raw.error, R.raw.error2);
+    OK("notifications_ringtone_correct_answer"),
+    ERROR("notifications_ringtone_wrong_answer"),
+    GET_READY("notifications_ringtone_starting_alarm");
 
     private MediaPlayer mp;
 
-    private Sound(int ... resources) {
-        this.resources = resources;
+    Sound(String key) {
+        this.key = key;
     }
-    private int[] resources;
-    private static Random RANDOM = new Random();
-    public void play(Context context, final Runnable ... runnables) {
-        int resource = resources[RANDOM.nextInt(resources.length)];
-        if (mp == null) {
-            mp = MediaPlayer.create(context, resource);
-            mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
-                @Override
-                public void onCompletion(MediaPlayer mpLocal) {
-                    mp.release();
-                    mp = null;
-                }
-            });
+    private String key;
+
+    public void play(Context context, final Runnable ... runnablesAfterSoundPlayed) {
+        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(context);
+        String uriString = preferences.getString(key, "");
+        if (uriString == null || uriString.trim().length() == 0) {
+            runRunnables(runnablesAfterSoundPlayed);
+            return;
         }
+        Uri uri = Uri.parse(uriString);
         try {
-            if (mp.isPlaying()) {
+            if (mp != null && mp.isPlaying()) {
                 mp.stop();
                 mp.release();
 
-                mp = MediaPlayer.create(context, resource);
             }
-
-            mp.start();
+            mp = MediaPlayer.create(context, uri);
+            mp.setLooping(false);
             mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override
-                public void onCompletion(MediaPlayer mp) {
-                    for (Runnable runnable: runnables) {
-                        runnable.run();
-                    }
+                public void onCompletion(MediaPlayer pMp) {
+                    mp.release();
+                    mp = null;
+                    runRunnables(runnablesAfterSoundPlayed);
+                }
+            });
+            mp.setOnSeekCompleteListener(new MediaPlayer.OnSeekCompleteListener() {
+                @Override
+                public void onSeekComplete(MediaPlayer mp) {
+                    mp.stop();
                 }
             });
         } catch (Exception e) {
-            e.printStackTrace();
-        }
+            if (mp != null) {
+                mp.release();
+                mp = null;
+            }
 
+            e.printStackTrace();
+            runRunnables(runnablesAfterSoundPlayed);
+            return;
+        }
+        mp.start();
+    }
+
+    private void runRunnables(Runnable[] runnablesAfterSoundPlayed) {
+        for (Runnable runnable: runnablesAfterSoundPlayed) {
+            runnable.run();
+        }
     }
 }

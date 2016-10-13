@@ -1,6 +1,8 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
 import android.app.ProgressDialog;
+import android.content.ClipData;
+import android.content.ClipboardManager;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.net.Uri;
@@ -9,7 +11,6 @@ import android.os.Handler;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.v7.app.AlertDialog;
-import android.util.Log;
 import android.view.View;
 import android.support.design.widget.NavigationView;
 import android.support.v4.view.GravityCompat;
@@ -20,6 +21,7 @@ import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
@@ -348,7 +350,7 @@ public class MainActivity extends AppCompatActivity
     public void onRegenerateData(MenuItem item) {
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
-                .setTitle("DELETING ALL DATA (lessons + tasks)")
+                .setTitle("DELETING ALL DATA IN LESSON " + lesson.getName())
                 .setMessage("ALLE DATEN WERDEN GELÖSCHT. FORTFAHREN?")
                 .setPositiveButton("Löschen", new DialogInterface.OnClickListener()
                 {
@@ -374,6 +376,45 @@ public class MainActivity extends AppCompatActivity
                     public void onClick(DialogInterface dialog, int which) {
                         DB.dueAllTasks(lesson);
                         updateStats();
+                    }
+                })
+                .setNegativeButton("Zurück", null)
+                .show();
+        closeDrawer();
+    }
+
+    public void onSettings(MenuItem item) {
+        Intent intent = new Intent(this, SettingsActivity.class);
+        startActivity(intent);
+    }
+
+    public void onSendDB(MenuItem item) {
+        Intent sendIntent = new Intent();
+        sendIntent.setAction(Intent.ACTION_SEND);
+        sendIntent.putExtra(Intent.EXTRA_TEXT, DB.dump(lesson, this));
+        sendIntent.putExtra(Intent.EXTRA_SUBJECT, "MathMemorizer BACKUP (" + lesson.getName() + ")");
+        sendIntent.setType("text/plain");
+        startActivity(sendIntent);
+        closeDrawer();
+    }
+
+    public void onImportFromClipboard(MenuItem item) {
+        new AlertDialog.Builder(this)
+                .setIcon(android.R.drawable.ic_dialog_alert)
+                .setTitle("DELETING ALL DATA IN LESSON " + lesson.getName())
+                .setMessage("ALLE DATEN WERDEN DURCH IMPORTIERTE ERSETZT. FORTFAHREN?")
+                .setPositiveButton("Löschen & Importieren", new DialogInterface.OnClickListener()
+                {
+                    @Override
+                    public void onClick(DialogInterface dialog, int which) {
+                        ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                        ClipData clip = clipboard.getPrimaryClip();
+                        if (clip.getItemCount() == 1) {
+                            DB.restore(lesson, MainActivity.this, clip.getItemAt(0).getText());
+                            updateStats();
+                        } else {
+                            Toast.makeText(MainActivity.this, "Copy JSON to import", Toast.LENGTH_LONG).show();
+                        }
                     }
                 })
                 .setNegativeButton("Zurück", null)
