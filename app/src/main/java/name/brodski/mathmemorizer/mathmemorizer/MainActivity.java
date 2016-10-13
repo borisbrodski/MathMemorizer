@@ -421,4 +421,12 @@ public class MainActivity extends AppCompatActivity
                 .show();
         closeDrawer();
     }
+
+    public void onLessonEdit(MenuItem item) {
+        if (lesson.getId() != null) {
+            Intent intent = new Intent(this, LessonEditActivity.class);
+            intent.putExtra(LessonEditActivity.EXTRA_LESSON_ID, lesson.getId());
+            startActivity(intent);
+        }
+    }
 }

@@ -7,4 +7,10 @@
         android:title="@string/action_settings"
         app:showAsAction="never"
         android:onClick="onSettings"/>
+    <item
+        android:id="@+id/lesson_settings"
+        android:orderInCategory="100"
+        android:title="Edit lesson"
+        app:showAsAction="never"
+        android:onClick="onLessonEdit"/>
 </menu>
