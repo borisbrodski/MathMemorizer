@@ -35,7 +35,7 @@ public class MigrationHelper8To9 extends AbstractMigrationHelper {
                 "_id", "NAME", "TASKS_PER_SESSION", "LEVEL2_MIN_SCORE", "LEVEL3_MIN_SCORE", "LEVEL1_MILLIS", "LEVEL2_MILLIS", "LEVEL3_MILLIS", "CORRECT_ANSWER_PAUSE_MILLIS", "WRONG_ANSWER_PAUSE_MILLIS"
         };
         copyData("lesson_tmp", fromFields, "lesson", toFields);
-
+        getDB().execSQL("DROP TABLE lesson_tmp");
     }
 
     @Override

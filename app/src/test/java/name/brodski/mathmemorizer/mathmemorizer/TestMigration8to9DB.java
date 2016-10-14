@@ -52,5 +52,7 @@ public class TestMigration8to9DB {
         int size = daoSession.getLessonDao().loadAll().size();
         System.out.println("Lessons in DB: " + size);
         Assert.assertEquals(2, size);
+
+        // TODO Check, that _tmp table was deleted
     }
 }
