@@ -34,7 +34,7 @@ buildscript {
 apply plugin: 'org.greenrobot.greendao'
 
 greendao {
-    schemaVersion 8
+    schemaVersion 9
 }
 
 dependencies {
@@ -48,4 +48,6 @@ dependencies {
     compile 'com.google.android.gms:play-services-appindexing:9.6.1'
     compile 'com.android.support:support-vector-drawable:24.2.1'
     testCompile 'junit:junit:4.12'
+    testCompile "org.robolectric:robolectric:3.1.2"
+    testCompile "com.google.guava:guava:19.0"
 }

@@ -20,12 +20,14 @@ public class Lesson {
     private long level1Millis;
     private long level2Millis;
     private long level3Millis;
-    private long wrongAnserPauseMillis;
+    private long correctAnswerPauseMillis;
+    private long wrongAnswerPauseMillis;
 
-    @Generated(hash = 1712251804)
+    @Generated(hash = 962704929)
     public Lesson(Long id, String name, long tasksPerSession, long level2MinScore,
             long level3MinScore, long level1Millis, long level2Millis,
-            long level3Millis, long wrongAnserPauseMillis) {
+            long level3Millis, long correctAnswerPauseMillis,
+            long wrongAnswerPauseMillis) {
         this.id = id;
         this.name = name;
         this.tasksPerSession = tasksPerSession;
@@ -34,7 +36,8 @@ public class Lesson {
         this.level1Millis = level1Millis;
         this.level2Millis = level2Millis;
         this.level3Millis = level3Millis;
-        this.wrongAnserPauseMillis = wrongAnserPauseMillis;
+        this.correctAnswerPauseMillis = correctAnswerPauseMillis;
+        this.wrongAnswerPauseMillis = wrongAnswerPauseMillis;
     }
 
     @Generated(hash = 1669664117)
@@ -97,12 +100,20 @@ public class Lesson {
         this.level3Millis = level3Millis;
     }
 
-    public long getWrongAnserPauseMillis() {
-        return wrongAnserPauseMillis;
+    public long getCorrectAnswerPauseMillis() {
+        return correctAnswerPauseMillis;
     }
 
-    public void setWrongAnserPauseMillis(long wrongAnserPauseMillis) {
-        this.wrongAnserPauseMillis = wrongAnserPauseMillis;
+    public long getWrongAnswerPauseMillis() {
+        return wrongAnswerPauseMillis;
+    }
+
+    public void setCorrectAnswerPauseMillis(long correctAnswerPauseMillis) {
+        this.correctAnswerPauseMillis = correctAnswerPauseMillis;
+    }
+
+    public void setWrongAnswerPauseMillis(long wrongAnswerPauseMillis) {
+        this.wrongAnswerPauseMillis = wrongAnswerPauseMillis;
     }
 
     public String getName() {

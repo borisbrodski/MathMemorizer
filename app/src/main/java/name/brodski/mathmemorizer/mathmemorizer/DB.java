@@ -1,7 +1,6 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
 import android.content.Context;
-import android.content.DialogInterface;
 import android.database.sqlite.SQLiteDatabase;
 import android.util.JsonReader;
 import android.util.JsonWriter;
@@ -13,16 +12,13 @@ import org.greenrobot.greendao.query.QueryBuilder;
 import java.io.IOException;
 import java.io.StringReader;
 import java.io.StringWriter;
-import java.io.Writer;
-import java.lang.reflect.Field;
-import java.nio.channels.Channels;
-import java.util.function.Consumer;
 
 import name.brodski.mathmemorizer.mathmemorizer.data.DaoMaster;
 import name.brodski.mathmemorizer.mathmemorizer.data.DaoSession;
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
 import name.brodski.mathmemorizer.mathmemorizer.data.Task;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskDao;
+import name.brodski.mathmemorizer.mathmemorizer.db.DBOpenHelper;
 
 /**
  * Created by boris on 28.09.16.
@@ -39,7 +35,7 @@ public class DB {
         }
         QueryBuilder.LOG_SQL = true;
 
-        DaoMaster.DevOpenHelper openHelper = new DaoMaster.DevOpenHelper(context, "task-db1", null);
+        DBOpenHelper openHelper = new DBOpenHelper(context, "task-db1");
         db = openHelper.getWritableDatabase();
 
         DaoMaster daoMaster = new DaoMaster(db);
@@ -107,7 +103,8 @@ public class DB {
         lesson.setLevel2MinScore(3);
         lesson.setLevel3MinScore(5);
 
-        lesson.setWrongAnserPauseMillis(5000);
+        lesson.setCorrectAnswerPauseMillis(1500);
+        lesson.setWrongAnswerPauseMillis(5000);
         lesson.setTasksPerSession(8);
 
         DB.getDaoSession().getLessonDao().insert(lesson);
@@ -124,7 +121,8 @@ public class DB {
         lesson.setLevel2MinScore(2);
         lesson.setLevel3MinScore(4);
 
-        lesson.setWrongAnserPauseMillis(2000);
+        lesson.setCorrectAnswerPauseMillis(800);
+        lesson.setWrongAnswerPauseMillis(2000);
         lesson.setTasksPerSession(4);
 
         DB.getDaoSession().getLessonDao().insert(lesson);
@@ -141,7 +139,8 @@ public class DB {
         lesson.setLevel2MinScore(2);
         lesson.setLevel3MinScore(4);
 
-        lesson.setWrongAnserPauseMillis(2000);
+        lesson.setCorrectAnswerPauseMillis(800);
+        lesson.setWrongAnswerPauseMillis(2000);
         lesson.setTasksPerSession(4);
 
         DB.getDaoSession().getLessonDao().insert(lesson);
