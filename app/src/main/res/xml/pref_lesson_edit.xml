@@ -9,11 +9,119 @@
         android:singleLine="true"
         android:title="Name" />
     <PreferenceCategory android:title="Details">
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="10"
+            android:inputType="numberDecimal"
+            android:key="lesson_questions_per_session"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Questions per sesion" />
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="1"
+            android:inputType="number"
+            android:key="lesson_pause_on_correct_answer"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Correct answer pause" />
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="1"
+            android:inputType="number"
+            android:key="lesson_pause_on_wrong_answer"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Incorrect answer pause" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Levels">
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="8"
+            android:inputType="number"
+            android:key="lesson_level_1_timeout"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Level 1: time to answer" />
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="6"
+            android:inputType="number"
+            android:key="lesson_level_2_timeout"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Level 2: time to answer" />
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="5"
+            android:inputType="number"
+            android:key="lesson_level_3_timeout"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Level 3: time to answer" />
+
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="3"
+            android:inputType="number"
+            android:key="lesson_score_for_level_1_to_2"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Upgrade to level 2 score" />
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="6"
+            android:inputType="number"
+            android:key="lesson_score_for_level_2_to_3"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Upgrade to level 3 score" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Text-To-Speak (TTS)">
         <SwitchPreference
             android:defaultValue="true"
-            android:key="lesson_tts_question_level1"
-            android:summary="Read using Text-To-Speach each level 1 question"
+            android:key="lesson_tts_question_level_1"
+            android:summary="Read each level 1 question"
             android:title="Read level 1 questions" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="lesson_tts_question_level_2"
+            android:summary="Read each level 2 question"
+            android:title="Read level 2 questions" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="lesson_tts_question_level_3"
+            android:summary="Read each level 3 question"
+            android:title="Read level 3 questions" />
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="lesson_tts_on_wrong_answer"
+            android:summary="On incorrect answer read both the question and the correct answer"
+            android:title="Read correct answer on errors" />
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Automatic start of a new session">
+        <SwitchPreference
+            android:defaultValue="false"
+            android:key="lesson_autorestart"
+            android:summary="Start a new session automatically after some period of time elapsed."
+            android:title="Auto-restart activated" />
+        <EditTextPreference
+            android:capitalize="words"
+            android:defaultValue="20"
+            android:inputType="number"
+            android:key="lesson_autorestart_pause"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Pause between sessions" />
     </PreferenceCategory>
 
     <!-- NOTE: EditTextPreference accepts EditText attributes. -->

@@ -2,46 +2,58 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:auto="http://schemas.android.com/apk/res-auto">
 
-    <!-- A 'parent' preference, which enables/disables child preferences (below)
-         when checked/unchecked. -->
     <SwitchPreference
         android:defaultValue="true"
-        android:key="notifications_enabled"
+        android:key="pref_notifications_enabled"
         android:title="@string/pref_title_notifications" />
+    <PreferenceCategory android:title="Im Spiel">
+        <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
+            android:key="notifications_ringtone_correct_answer"
+            android:title="@string/pref_title_ringtone_correct_answer"
+            android:defaultValue="ok3"
+            android:dependency="pref_notifications_enabled"
+            auto:ringtoneType="notification"
+            auto:showSilent="true"
+            auto:showDefault="true"
+            auto:extraRingtones="@array/extra_ringtones"
+            auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
+        <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
+            android:key="notifications_ringtone_wrong_answer"
+            android:title="@string/pref_title_ringtone_wrong_answer"
+            android:defaultValue="error"
+            android:dependency="pref_notifications_enabled"
+            auto:ringtoneType="notification"
+            auto:showSilent="true"
+            auto:showDefault="true"
+            auto:extraRingtones="@array/extra_ringtones"
+            auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
+    </PreferenceCategory>
+    <PreferenceCategory android:title="Automatische Neustart">
+        <!-- android.resource://name.brodski.mathmemorizer.mathmemorizer/2131165185 -->
+        <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
+            android:key="notifications_ringtone_starting_alarm"
+            android:title="@string/pref_title_ringtone_starting_alarm"
+            android:defaultValue="default"
+            android:dependency="pref_notifications_enabled"
+            auto:ringtoneType="notification"
+            auto:showSilent="true"
+            auto:showDefault="true"
+            auto:extraRingtones="@array/extra_ringtones"
+            auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
+        <EditTextPreference
+            android:defaultValue="5"
+            android:dependency="pref_notifications_enabled"
+            android:inputType="numberDecimal"
+            android:key="notifications_restart_alarm_for_last_seconds"
+            android:maxLines="1"
+            android:selectAllOnFocus="true"
+            android:singleLine="true"
+            android:title="Letzte Sekunden Warnung" />
 
-    <!-- Allows the user to choose a ringtone in the 'notification' category. -->
-    <!-- NOTE: This preference will be enabled only when the checkbox above is checked. -->
-    <!-- NOTE: RingtonePreference's summary should be set to its value by the activity code. -->
-    <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
-        android:key="notifications_ringtone_correct_answer"
-        android:title="@string/pref_title_ringtone_correct_answer"
-        android:defaultValue="ok3"
-        auto:ringtoneType="notification"
-        auto:showSilent="true"
-        auto:showDefault="true"
-        auto:extraRingtones="@array/extra_ringtones"
-        auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
-    <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
-        android:key="notifications_ringtone_wrong_answer"
-        android:title="@string/pref_title_ringtone_wrong_answer"
-        android:defaultValue="error"
-        auto:ringtoneType="notification"
-        auto:showSilent="true"
-        auto:showDefault="true"
-        auto:extraRingtones="@array/extra_ringtones"
-        auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
-    <!-- android.resource://name.brodski.mathmemorizer.mathmemorizer/2131165185 -->
-    <name.brodski.mathmemorizer.mathmemorizer.ExtraRingtonePreference
-        android:key="notifications_ringtone_starting_alarm"
-        android:title="@string/pref_title_ringtone_starting_alarm"
-        android:defaultValue="default"
-        auto:ringtoneType="notification"
-        auto:showSilent="true"
-        auto:showDefault="true"
-        auto:extraRingtones="@array/extra_ringtones"
-        auto:extraRingtoneTitles="@array/extra_ringtone_titles"/>
-    <!-- NOTE: This preference will be enabled only when the checkbox above is checked. -->
-<!--
+    </PreferenceCategory>
+
+
+    <!--
     <SwitchPreference
         android:defaultValue="true"
         android:dependency="notifications_enabled"

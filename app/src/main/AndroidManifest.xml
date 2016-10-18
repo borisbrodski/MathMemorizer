@@ -36,14 +36,29 @@
  ATTENTION: This was auto-generated to add Google Play services to your project for
      App Indexing.  See https://g.co/AppIndexing/AndroidStudio for more information.
         -->
+        <activity
+            android:name=".preferences.SettingsActivity"
+            android:label="@string/title_activity_settings"
+            android:parentActivityName=".MainActivity"
+            >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="name.brodski.mathmemorizer.mathmemorizer.MainActivity" />
+
+        </activity>
+        <activity android:name=".preferences.LessonEditActivity"
+            android:label="Edit lesson"
+            android:parentActivityName=".MainActivity"
+            >
+            <meta-data
+                android:name="android.support.PARENT_ACTIVITY"
+                android:value="name.brodski.mathmemorizer.mathmemorizer.MainActivity" />
+
+        </activity>
         <meta-data
             android:name="com.google.android.gms.version"
             android:value="@integer/google_play_services_version" />
 
-        <activity
-            android:name=".SettingsActivity"
-            android:label="@string/title_activity_settings" />
-        <activity android:name=".LessonEditActivity"></activity>
     </application>
 
 </manifest>

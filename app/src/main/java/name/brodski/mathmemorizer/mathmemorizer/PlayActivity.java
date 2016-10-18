@@ -270,7 +270,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         }
 //        builder.where(new WhereCondition.StringCondition(
 //               "T." + TaskDao.Properties.LastShow.columnName + " < (" + System.currentTimeMillis() + "-T." + TaskDao.Properties.Score.columnName + "*1000*60*60)"));
-        builder.orderAsc(TaskDao.Properties.Due);
+        builder.orderAsc(TaskDao.Properties.Due, TaskDao.Properties.Order);
         builder.limit(10);
         List<Task> list = builder.list();
         if (list.size() == 0) {

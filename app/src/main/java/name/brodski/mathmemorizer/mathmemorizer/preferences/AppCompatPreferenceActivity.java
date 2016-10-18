@@ -1,4 +1,4 @@
-package name.brodski.mathmemorizer.mathmemorizer;
+package name.brodski.mathmemorizer.mathmemorizer.preferences;
 
 import android.content.res.Configuration;
 import android.os.Bundle;

@@ -34,6 +34,8 @@ import java.util.List;
 
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskGenerator;
+import name.brodski.mathmemorizer.mathmemorizer.preferences.LessonEditActivity;
+import name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {

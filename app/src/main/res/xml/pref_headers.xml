@@ -2,39 +2,51 @@
 
     <!--
      General
+       Notifications
+        - pref_notifications_enabled
+        - pref_title_ringtone_correct_answer
+        - pref_title_ringtone_wrong_answer
+        - pref_title_ringtone_starting_alarm
 
 
+     Lesson
+           lesson_name
+       General
+           lesson_questions_per_session
+           lesson_pause_on_correct_answer, s (int)
+           lesson_pause_on_wrong_answer,   s (int)
+       Level configuration
+           lesson_level_1_timeout, s       (int)
+           lesson_level_2_timeout, s       (int)
+           lesson_level_3_timeout, s       (int)
+           lesson_score_for_level_1_to_2   (int)
+           lesson_score_for_level_2_to_3   (int)
+       TTS
+           lesson_tts_question_level_1 (yes/no)
+           lesson_tts_question_level_2 (yes/no)
+           lesson_tts_question_level_3 (yes/no)
+           lesson_tts_on_wrong_answer  (yes/no)
+       Autorestart
+           lesson_autorestart (boolean)
+           lesson_autorestart_pause, s (int)
 
-     Play
-       Pause on correct answer
-       Pause on wrong answer
-       Score for level 1 -> 2 (int)
-       Score for level 2 -> 3 (int)
-       TTS question level 1 (yes/no)
-       TTS question level 2 (yes/no)
-       TTS question level 3 (yes/no)
-       TTS on wrong answer  (yes/no)
-
-       On wrong answer:
-           TTS question
-           TTS also all variants
 
      -->
 
 
-    <header
-        android:fragment="name.brodski.mathmemorizer.mathmemorizer.SettingsActivity$GeneralPreferenceFragment"
-        android:icon="@drawable/ic_info_black_24dp"
-        android:title="@string/pref_header_general" />
+    <!--<header-->
+        <!--android:fragment="name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity$GeneralPreferenceFragment"-->
+        <!--android:icon="@drawable/ic_info_black_24dp"-->
+        <!--android:title="@string/pref_header_general" />-->
 
     <header
-        android:fragment="name.brodski.mathmemorizer.mathmemorizer.SettingsActivity$NotificationPreferenceFragment"
+        android:fragment="name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity$NotificationPreferenceFragment"
         android:icon="@drawable/ic_notifications_black_24dp"
         android:title="@string/pref_header_notifications" />
 
-    <header
-        android:fragment="name.brodski.mathmemorizer.mathmemorizer.SettingsActivity$DataSyncPreferenceFragment"
-        android:icon="@drawable/ic_sync_black_24dp"
-        android:title="@string/pref_header_data_sync" />
+    <!--<header-->
+        <!--android:fragment="name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity$DataSyncPreferenceFragment"-->
+        <!--android:icon="@drawable/ic_sync_black_24dp"-->
+        <!--android:title="@string/pref_header_data_sync" />-->
 
 </preference-headers>
