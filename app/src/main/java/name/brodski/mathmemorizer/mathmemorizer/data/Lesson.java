@@ -1,8 +1,9 @@
 package name.brodski.mathmemorizer.mathmemorizer.data;
 
+import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
-import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.Generated;
+import org.greenrobot.greendao.annotation.Id;
 
 /**
  * Created by boris on 30.09.16.
@@ -12,6 +13,9 @@ import org.greenrobot.greendao.annotation.Generated;
 public class Lesson {
     @Id
     private Long id;
+
+    @Convert(converter =  LessonTypeConverter.class, columnType = String.class)
+    private LessonType type;
 
     private String name;
     private long tasksPerSession;
@@ -23,12 +27,16 @@ public class Lesson {
     private long correctAnswerPauseMillis;
     private long wrongAnswerPauseMillis;
 
-    @Generated(hash = 962704929)
-    public Lesson(Long id, String name, long tasksPerSession, long level2MinScore,
-            long level3MinScore, long level1Millis, long level2Millis,
-            long level3Millis, long correctAnswerPauseMillis,
-            long wrongAnswerPauseMillis) {
+    @Generated(hash = 1669664117)
+    public Lesson() {
+    }
+
+    @Generated(hash = 223801228)
+    public Lesson(Long id, LessonType type, String name, long tasksPerSession,
+            long level2MinScore, long level3MinScore, long level1Millis, long level2Millis,
+            long level3Millis, long correctAnswerPauseMillis, long wrongAnswerPauseMillis) {
         this.id = id;
+        this.type = type;
         this.name = name;
         this.tasksPerSession = tasksPerSession;
         this.level2MinScore = level2MinScore;
@@ -38,10 +46,6 @@ public class Lesson {
         this.level3Millis = level3Millis;
         this.correctAnswerPauseMillis = correctAnswerPauseMillis;
         this.wrongAnswerPauseMillis = wrongAnswerPauseMillis;
-    }
-
-    @Generated(hash = 1669664117)
-    public Lesson() {
     }
 
     public Long getId() {
@@ -122,5 +126,13 @@ public class Lesson {
 
     public void setName(String name) {
         this.name = name;
+    }
+
+    public LessonType getType() {
+        return type;
+    }
+
+    public void setType(LessonType type) {
+        this.type = type;
     }
 }

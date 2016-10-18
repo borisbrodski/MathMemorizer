@@ -1,7 +1,6 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
 import android.content.Context;
-import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
 import android.support.v4.app.Fragment;
@@ -10,13 +9,12 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-// import android.support.v7.view.GridLayoutManager;
-import android.widget.GridLayout;
 import android.widget.TableLayout;
 import android.widget.TableRow;
-import android.widget.Toast;
 
 import java.util.Arrays;
+
+// import android.support.v7.view.GridLayoutManager;
 
 
 /**

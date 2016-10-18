@@ -1,20 +1,16 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
-import android.database.sqlite.SQLiteDatabase;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
-import android.util.Log;
 import android.view.View;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
 import org.greenrobot.greendao.query.QueryBuilder;
-import org.greenrobot.greendao.query.WhereCondition;
 
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -26,8 +22,6 @@ import java.util.Locale;
 import java.util.Random;
 import java.util.Set;
 
-import name.brodski.mathmemorizer.mathmemorizer.data.DaoMaster;
-import name.brodski.mathmemorizer.mathmemorizer.data.DaoSession;
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
 import name.brodski.mathmemorizer.mathmemorizer.data.Task;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskDao;
@@ -41,8 +35,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     public static final Random RANDOM = new Random(System.currentTimeMillis());
     public static final int PROGRESS_UPDATES_IN_SEC = 10;
     public static final String LESSON_ID = "LESSON_ID";
+
     private Lesson lesson;
-    private Task task;
     private PlayMultipleChoiceFragment fragment;
     private TextView textViewTask;
     private ProgressBar progressBar;
@@ -50,11 +44,14 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     private long mProgressCounter;
     private Handler handler = new Handler();
     private TextView textViewDebug;
-    private List<Long> lastTaskIds = new ArrayList<>();
     private TextView textViewLessonName;
     private boolean isPaused = true;
     private int successTaskCount;
     private TextToSpeech ttobj;
+
+    // ---------- STATE ----------
+    private Task task;
+    private List<Long> lastTaskIds = new ArrayList<>();
     private String toSpeak;
     private String toTaskSpeak;
 
@@ -101,7 +98,6 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             }
         }, "com.google.android.tts");
 
-
         task = nextTask();
         showTask();
     }
@@ -120,11 +116,28 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             op1 = task.getOperand2();
             op2 = task.getOperand1();
         }
-        int result = op1 * op2;
 
-        toTaskSpeak = ""  + op1 + " mal " + op2;
-        toSpeak = ""  + op1 + " mal " + op2 + " ist " + result;
-        textViewTask.setText("" + op1 + " * " + op2 + " = ?");
+        int result;
+
+
+        switch (lesson.getType()) {
+            case MULTIPLICATION:
+                result = op1 * op2;
+
+                toTaskSpeak = ""  + op1 + " mal " + op2;
+                toSpeak = ""  + op1 + " mal " + op2 + " ist " + result;
+                textViewTask.setText("" + op1 + " * " + op2 + " = ?");
+                break;
+            case DIVISION:
+                result = op1;
+                op1 = op1 * op2;
+                toTaskSpeak = ""  + op1 + " durch " + op2;
+                toSpeak = ""  + op1 + " durch " + op2 + " ist " + result;
+                textViewTask.setText("" + op1 + " : " + op2 + " = ?");
+                break;
+            default:
+                throw new RuntimeException("Unknown " + lesson.getType());
+        }
 
         Set<String> choices = new HashSet<>();
         addChoice(choices, result - 3);
@@ -135,8 +148,21 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         addChoice(choices, result + 3);
 
         for (int i = 0; i < 7; i++) {
-            int from = 2 * max(op1, op2);
-            int to = max(from, min(100, result * 2));
+            int from;
+            int to;
+            switch (lesson.getType()) {
+                case MULTIPLICATION:
+                    from = 2 * max(op1, op2);
+                    to = max(from, min(100, result * 2));
+                    break;
+                case DIVISION:
+                    from = 1;
+                    to = op1;
+                    break;
+                default:
+                    throw new RuntimeException("Unknown " + lesson.getType());
+            }
+
             int value = from + RANDOM.nextInt(to - from + 1);
             if (value != result) {
                 addChoice(choices, value);

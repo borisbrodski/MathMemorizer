@@ -1,11 +1,11 @@
 package name.brodski.mathmemorizer.mathmemorizer.data;
 
+import org.greenrobot.greendao.DaoException;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 import org.greenrobot.greendao.annotation.NotNull;
 import org.greenrobot.greendao.annotation.ToOne;
-import org.greenrobot.greendao.DaoException;
 
 /**
  * Created by boris on 26.09.16.
@@ -13,8 +13,10 @@ import org.greenrobot.greendao.DaoException;
 
 @Entity
 public class Task {
+
     @Id
     private Long id;
+
     private int operand1;
     private int operand2;
 
@@ -193,4 +195,6 @@ public class Task {
     public void setLessonId(long lessonId) {
         this.lessonId = lessonId;
     }
+
+
 }

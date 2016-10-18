@@ -1,18 +1,11 @@
 package name.brodski.mathmemorizer.mathmemorizer.preferences;
 
 import android.annotation.TargetApi;
-import android.app.FragmentManager;
-import android.content.SharedPreferences;
 import android.os.Build;
-import android.preference.Preference;
-import android.preference.PreferenceManager;
 import android.os.Bundle;
 
-import name.brodski.mathmemorizer.mathmemorizer.DB;
 import name.brodski.mathmemorizer.mathmemorizer.R;
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
-
-import static name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity.NotificationPreferenceFragment.PREF_RINGTONE_CORRECT_ANSWER;
 
 public class LessonEditActivity extends AppCompatPreferenceActivity {
 

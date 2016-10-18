@@ -1,7 +1,6 @@
 package name.brodski.mathmemorizer.mathmemorizer.db;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.widget.Toast;
 
 import org.greenrobot.greendao.database.Database;
@@ -23,7 +22,9 @@ public class DBOpenHelper extends DaoMaster.OpenHelper {
     public void onUpgrade(Database db, int oldVersion, int newVersion) {
         switch (oldVersion) {
             case MigrationHelper8To9.SOURCE:
-                new MigrationHelper8To9(db, newVersion).migrate();
+                new MigrationHelper8To9(db, 9).migrate();
+            case MigrationHelper9To10.SOURCE:
+                new MigrationHelper9To10(db, newVersion).migrate();
                 break;
             default:
                 Toast.makeText(mContext, "Can't migrate database. Version not supported: " + oldVersion, Toast.LENGTH_LONG).show();

@@ -1,10 +1,7 @@
 package name.brodski.mathmemorizer.mathmemorizer.data;
 
 import android.content.Context;
-import android.database.sqlite.SQLiteDatabase;
 import android.widget.Toast;
-
-import org.greenrobot.greendao.query.QueryBuilder;
 
 import java.util.Random;
 
@@ -25,8 +22,8 @@ public class TaskGenerator {
         lesson = DB.getDaoSession().getLessonDao().load(lesson.getId());
         Random random = new Random();
 //        for (Lesson lesson : DB.getDaoSession().getLessonDao().loadAll()) {
-            for (int a = 0; a <= 9; a++) {
-                for (int b = a; b <= 9; b++) {
+            for (int a = 1; a <= 10; a++) {
+                for (int b = a; b <= 10; b++) {
 //                    QueryBuilder<Task> builder = DB.getDaoSession().getTaskDao().queryBuilder();
 //                    builder.where(TaskDao.Properties.LessonId.eq(lesson.getId()));
 //                    builder.where(TaskDao.Properties.Operand1.eq(a));

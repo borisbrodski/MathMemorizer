@@ -2,17 +2,9 @@ package name.brodski.mathmemorizer.mathmemorizer;
 
 import android.content.Context;
 import android.content.SharedPreferences;
-import android.media.AudioAttributes;
 import android.media.MediaPlayer;
-import android.media.Ringtone;
-import android.media.RingtoneManager;
 import android.net.Uri;
 import android.preference.PreferenceManager;
-import android.support.v4.app.NotificationCompat;
-
-import java.util.Random;
-
-import static android.R.attr.resource;
 
 /**
  * Created by boris on 02.10.16.

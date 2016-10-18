@@ -1,7 +1,5 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
-import android.app.Activity;
-import android.content.Context;
 import android.database.Cursor;
 import android.database.MatrixCursor;
 import android.database.SQLException;
@@ -9,10 +7,6 @@ import android.database.sqlite.SQLiteDatabase;
 import android.util.Log;
 
 import java.util.ArrayList;
-
-import name.brodski.mathmemorizer.mathmemorizer.data.DaoMaster;
-import name.brodski.mathmemorizer.mathmemorizer.data.DaoSession;
-import name.brodski.mathmemorizer.mathmemorizer.data.TaskDao;
 
 /**
  * Created by boris on 27.09.16.
