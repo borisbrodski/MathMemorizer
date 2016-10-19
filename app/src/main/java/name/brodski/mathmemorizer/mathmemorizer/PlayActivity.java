@@ -350,7 +350,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
                     task.setDue(System.currentTimeMillis() + day);
                     break;
                 default:
-                    task.setDue(System.currentTimeMillis() + (task.getScore() * 2 - 10) * day);
+                    task.setDue(System.currentTimeMillis() + day);
+//                    task.setDue(System.currentTimeMillis() + (task.getScore() * 2 - 10) * day);
                     break;
             }
         } else {
