@@ -23,11 +23,17 @@ public class Pref {
 
     private final String name;
     private final PrefType prefType;
-
+    private final String field;
 
     Pref(String name, PrefType prefType) {
         this.name = name;
         this.prefType = prefType;
+        this.field = null;
+    }
+    Pref(String name, PrefType prefType, String field) {
+        this.name = name;
+        this.prefType = prefType;
+        this.field = field;
     }
 
     public String getName() {
@@ -35,5 +41,13 @@ public class Pref {
     }
     public boolean isSummaryUpdateRequired() {
         return prefType.summaryUpdateRequired;
+    }
+
+    public PrefType getType() {
+        return prefType;
+    }
+
+    public String getField() {
+        return field;
     }
 }

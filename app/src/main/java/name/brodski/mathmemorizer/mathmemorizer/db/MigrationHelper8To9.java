@@ -1,5 +1,7 @@
 package name.brodski.mathmemorizer.mathmemorizer.db;
 
+import android.content.Context;
+
 import org.greenrobot.greendao.database.Database;
 
 import name.brodski.mathmemorizer.mathmemorizer.data.LessonDao;
@@ -11,8 +13,8 @@ public class MigrationHelper8To9 extends AbstractMigrationHelper {
     public static final int SOURCE = 8;
     public static final int TARGET = 9;
 
-    protected MigrationHelper8To9(Database db, int targetVersion) {
-        super(db, targetVersion);
+    protected MigrationHelper8To9(Context context, Database db, int targetVersion) {
+        super(context, db, targetVersion);
     }
 
 
@@ -22,7 +24,8 @@ public class MigrationHelper8To9 extends AbstractMigrationHelper {
          */
         getDB().execSQL("ALTER TABLE lesson RENAME TO lesson_tmp");
 
-        LessonDao.createTable(getDB(), true);
+//        LessonDao.createTable(getDB(), true);
+        executeDDLFromResource();
 
         String[] fromFields = {
                 "_id", "NAME", "TASKS_PER_SESSION", "LEVEL2_MIN_SCORE", "LEVEL3_MIN_SCORE", "LEVEL1_MILLIS", "LEVEL2_MILLIS", "LEVEL3_MILLIS", "1500",                        "WRONG_ANSER_PAUSE_MILLIS"

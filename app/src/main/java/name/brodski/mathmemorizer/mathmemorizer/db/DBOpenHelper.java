@@ -22,9 +22,11 @@ public class DBOpenHelper extends DaoMaster.OpenHelper {
     public void onUpgrade(Database db, int oldVersion, int newVersion) {
         switch (oldVersion) {
             case MigrationHelper8To9.SOURCE:
-                new MigrationHelper8To9(db, 9).migrate();
+                new MigrationHelper8To9(mContext, db, 9).migrate();
             case MigrationHelper9To10.SOURCE:
-                new MigrationHelper9To10(db, newVersion).migrate();
+                new MigrationHelper9To10(mContext, db, 10).migrate();
+            case MigrationHelper10To11.SOURCE:
+                new MigrationHelper10To11(mContext, db, newVersion).migrate();
                 break;
             default:
                 Toast.makeText(mContext, "Can't migrate database. Version not supported: " + oldVersion, Toast.LENGTH_LONG).show();

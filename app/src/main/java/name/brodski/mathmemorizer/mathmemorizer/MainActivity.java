@@ -431,4 +431,9 @@ public class MainActivity extends AppCompatActivity
             startActivity(intent);
         }
     }
+
+    public void onCreateNewLesson(MenuItem item) {
+        Intent intent = new Intent(this, LessonEditActivity.class);
+        startActivity(intent);
+    }
 }

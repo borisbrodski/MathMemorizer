@@ -157,7 +157,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
                     break;
                 case DIVISION:
                     from = 1;
-                    to = op1;
+                    to = min(10, op1);
                     break;
                 default:
                     throw new RuntimeException("Unknown " + lesson.getType());

@@ -28,7 +28,7 @@ import name.brodski.mathmemorizer.mathmemorizer.db.DBOpenHelper;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 16)
-public class TestMigration9to10DB extends AbstractMigrationTest {
+public class TestMigration10to11DB extends AbstractMigrationTest {
     private DaoSession daoSession;
 
     @Before
@@ -47,7 +47,7 @@ public class TestMigration9to10DB extends AbstractMigrationTest {
         if (testDBFile.exists()) {
             testDBFile.delete();
         }
-        Files.copy(new File("test-data/task-db-v9.sqlite"), testDBFile);
+        Files.copy(new File("test-data/task-db-v10.sqlite"), testDBFile);
         DBOpenHelper openHelper = new DBOpenHelper(RuntimeEnvironment.application, testDBFile.getAbsolutePath());
         SQLiteDatabase db = openHelper.getWritableDatabase();
         daoSession = new DaoMaster(db).newSession();

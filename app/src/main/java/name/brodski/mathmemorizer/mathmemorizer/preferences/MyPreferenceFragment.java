@@ -6,6 +6,9 @@ import android.os.Build;
 import android.preference.PreferenceFragment;
 import android.view.MenuItem;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
  * Created by boris on 15.10.16.
  */
@@ -25,6 +28,7 @@ public abstract class MyPreferenceFragment extends PreferenceFragment {
         }
         setHasOptionsMenu(true);
     }
+
 
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {

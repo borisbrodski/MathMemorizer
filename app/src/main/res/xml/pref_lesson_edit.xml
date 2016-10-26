@@ -114,6 +114,7 @@
             android:summary="Start a new session automatically after some period of time elapsed."
             android:title="Auto-restart activated" />
         <EditTextPreference
+            android:dependency="lesson_autorestart"
             android:capitalize="words"
             android:defaultValue="20"
             android:inputType="number"

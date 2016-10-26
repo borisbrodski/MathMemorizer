@@ -44,6 +44,12 @@
     <group android:id="@+id/group_lessons">
 
     </group>
+    <group android:id="@+id/bottom_actions">
+        <item
+            android:icon="@drawable/ic_menu_slideshow"
+            android:title="New lesson"
+            android:onClick="onCreateNewLesson"/>
+    </group>
 <!--
     <item android:title="Communicate">
         <menu>

@@ -25,7 +25,7 @@ import name.brodski.mathmemorizer.mathmemorizer.db.DBOpenHelper;
 
 @RunWith(RobolectricTestRunner.class)
 @Config(constants = BuildConfig.class, sdk = 16)
-public class TestMigration8to10DB {
+public class TestMigration8to10DB extends AbstractMigrationTest {
     private DaoSession daoSession;
 
     @Before

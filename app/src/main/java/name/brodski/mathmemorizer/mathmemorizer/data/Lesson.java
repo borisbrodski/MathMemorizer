@@ -5,6 +5,8 @@ import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
 
+import name.brodski.mathmemorizer.mathmemorizer.preferences.Pref;
+
 /**
  * Created by boris on 30.09.16.
  */
@@ -27,14 +29,26 @@ public class Lesson {
     private long correctAnswerPauseMillis;
     private long wrongAnswerPauseMillis;
 
+    public boolean lessonTTSQuestionLevel1;
+    public boolean lessonTTSQuestionLevel2;
+    public boolean lessonTTSQuestionLevel3;
+    public boolean lessonTTSOnWrongAnswer;
+
+    public boolean lessonAutorestart;
+    public long lessonAutorestartPause;
+
+
     @Generated(hash = 1669664117)
     public Lesson() {
     }
 
-    @Generated(hash = 223801228)
+    @Generated(hash = 547008348)
     public Lesson(Long id, LessonType type, String name, long tasksPerSession,
             long level2MinScore, long level3MinScore, long level1Millis, long level2Millis,
-            long level3Millis, long correctAnswerPauseMillis, long wrongAnswerPauseMillis) {
+            long level3Millis, long correctAnswerPauseMillis, long wrongAnswerPauseMillis,
+            boolean lessonTTSQuestionLevel1, boolean lessonTTSQuestionLevel2,
+            boolean lessonTTSQuestionLevel3, boolean lessonTTSOnWrongAnswer,
+            boolean lessonAutorestart, long lessonAutorestartPause) {
         this.id = id;
         this.type = type;
         this.name = name;
@@ -46,6 +60,12 @@ public class Lesson {
         this.level3Millis = level3Millis;
         this.correctAnswerPauseMillis = correctAnswerPauseMillis;
         this.wrongAnswerPauseMillis = wrongAnswerPauseMillis;
+        this.lessonTTSQuestionLevel1 = lessonTTSQuestionLevel1;
+        this.lessonTTSQuestionLevel2 = lessonTTSQuestionLevel2;
+        this.lessonTTSQuestionLevel3 = lessonTTSQuestionLevel3;
+        this.lessonTTSOnWrongAnswer = lessonTTSOnWrongAnswer;
+        this.lessonAutorestart = lessonAutorestart;
+        this.lessonAutorestartPause = lessonAutorestartPause;
     }
 
     public Long getId() {
@@ -134,5 +154,73 @@ public class Lesson {
 
     public void setType(LessonType type) {
         this.type = type;
+    }
+
+    public boolean isLessonTTSQuestionLevel1() {
+        return lessonTTSQuestionLevel1;
+    }
+
+    public void setLessonTTSQuestionLevel1(boolean lessonTTSQuestionLevel1) {
+        this.lessonTTSQuestionLevel1 = lessonTTSQuestionLevel1;
+    }
+
+    public boolean isLessonTTSOnWrongAnswer() {
+        return lessonTTSOnWrongAnswer;
+    }
+
+    public void setLessonTTSOnWrongAnswer(boolean lessonTTSOnWrongAnswer) {
+        this.lessonTTSOnWrongAnswer = lessonTTSOnWrongAnswer;
+    }
+
+    public boolean isLessonAutorestart() {
+        return lessonAutorestart;
+    }
+
+    public void setLessonAutorestart(boolean lessonAutorestart) {
+        this.lessonAutorestart = lessonAutorestart;
+    }
+
+    public long getLessonAutorestartPause() {
+        return lessonAutorestartPause;
+    }
+
+    public void setLessonAutorestartPause(long lessonAutorestartPause) {
+        this.lessonAutorestartPause = lessonAutorestartPause;
+    }
+
+    public boolean isLessonTTSQuestionLevel3() {
+        return lessonTTSQuestionLevel3;
+    }
+
+    public void setLessonTTSQuestionLevel3(boolean lessonTTSQuestionLevel3) {
+        this.lessonTTSQuestionLevel3 = lessonTTSQuestionLevel3;
+    }
+
+    public boolean isLessonTTSQuestionLevel2() {
+        return lessonTTSQuestionLevel2;
+    }
+
+    public void setLessonTTSQuestionLevel2(boolean lessonTTSQuestionLevel2) {
+        this.lessonTTSQuestionLevel2 = lessonTTSQuestionLevel2;
+    }
+
+    public boolean getLessonAutorestart() {
+        return this.lessonAutorestart;
+    }
+
+    public boolean getLessonTTSOnWrongAnswer() {
+        return this.lessonTTSOnWrongAnswer;
+    }
+
+    public boolean getLessonTTSQuestionLevel3() {
+        return this.lessonTTSQuestionLevel3;
+    }
+
+    public boolean getLessonTTSQuestionLevel2() {
+        return this.lessonTTSQuestionLevel2;
+    }
+
+    public boolean getLessonTTSQuestionLevel1() {
+        return this.lessonTTSQuestionLevel1;
     }
 }
