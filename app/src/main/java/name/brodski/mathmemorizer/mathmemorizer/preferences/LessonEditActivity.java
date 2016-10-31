@@ -16,63 +16,48 @@ import java.util.List;
 import name.brodski.mathmemorizer.mathmemorizer.DB;
 import name.brodski.mathmemorizer.mathmemorizer.R;
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
+import name.brodski.mathmemorizer.mathmemorizer.data.LessonType;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskGenerator;
 
 public class LessonEditActivity extends AppCompatPreferenceActivity {
 
     public static final String EXTRA_LESSON_ID = LessonEditActivity.class.getName() + "#LESSON_ID";
+    public static final String EXTRA_LESSON_TYPE = LessonEditActivity.class.getName() + "#LESSON_TYPE";
+    public static final String EXTRA_LESSON_TEMPLATE = LessonEditActivity.class.getName() + "#LESSON_TEMPLATE";
+
     private Lesson lesson;
     private LessonEditFragment fragment;
+    private boolean creatingNew;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
-//        Toolbar toolbar = new Toolbar(this);
-//        TextView textView = new TextView(this);
-//        textView.setText("Test");
-//        toolbar.addView(textView);
-        //setSupportActionBar(toolbar);
-//        getSupportActionBar().
-
-
-        // setContentView(android.R.layout.list_content);
         fragment = new LessonEditFragment();
-        fragment.setActivity(this);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commitAllowingStateLoss();
 
         long id = getIntent().getLongExtra(EXTRA_LESSON_ID, -1);
-        if (id > -1) {
+        creatingNew = id < 0;
+        if (creatingNew) {
+            LessonType type = LessonType.values()[getIntent().getIntExtra(EXTRA_LESSON_TYPE, -1)];
+            Lesson.LessonTemplate template = Lesson.getTemplates(this, type)[getIntent().getIntExtra(EXTRA_LESSON_TEMPLATE, -1)];
+            lesson = template.lesson;
+        } else {
             lesson = DB.getDaoSession().getLessonDao().load(id);
         }
 
-//
-//        addPreferencesFromResource(R.xml.pref_lesson_edit);
-//        Preference prefName = findPreference("lesson_name");
-//
-//        Preference prefTTSQuestionLevel1 = findPreference("lesson_tts_question_level1");
-//
-//        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        SharedPreferences.Editor editor = preferences.edit();
-//        editor.putString("lesson_name", lesson.getName());
-//        editor.commit();
-
-        //prefName.setSummary("S " + lesson.getName());
-
-
+        fragment.setActivity(this);
+        getFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commitAllowingStateLoss();
     }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
-        if (lesson == null) {
+        if (creatingNew) {
             getMenuInflater().inflate(R.menu.lesson_edit, menu);
         }
         return super.onCreateOptionsMenu(menu);
     }
 
     public void onCreateNewLesson(MenuItem item) {
-        Lesson lesson = new Lesson();
-        fragment.fillFromPreferences(lesson);
         DB.getDaoSession().getLessonDao().insert(lesson);
         TaskGenerator.generateTasks(this, lesson);
         Toast.makeText(this, "New lesson created", Toast.LENGTH_LONG).show();
@@ -127,7 +112,7 @@ public class LessonEditActivity extends AppCompatPreferenceActivity {
         }
 
         @Override
-        protected Object getObjectToEdit() {
+        protected Object getObject() {
             return activity.lesson;
         }
 
@@ -143,7 +128,9 @@ public class LessonEditActivity extends AppCompatPreferenceActivity {
         }
 
         protected void objectUpdated() {
-            DB.getDaoSession().getLessonDao().update(activity.lesson);
+            if (!activity.creatingNew) {
+                DB.getDaoSession().getLessonDao().update(activity.lesson);
+            }
         }
 
         @Override

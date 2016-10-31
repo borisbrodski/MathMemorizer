@@ -16,16 +16,19 @@ import java.lang.reflect.Method;
  */
 @TargetApi(Build.VERSION_CODES.HONEYCOMB)
 public abstract class MyEditingPreferenceFragment extends MyPreferenceFragment {
-    protected abstract Object getObjectToEdit();
+    protected abstract Object getObject();
     protected abstract boolean validate(Pref pref, Preference preference, Object newValue);
     protected abstract void objectUpdated();
 
-//    private boolean initializing;
-
     @Override
     public void onCreate(Bundle savedInstanceState) {
-//        initializing = true;
-        Object objectToEdit = getObjectToEdit();
+        Object objectToEdit = getObject();
+        fillPreferencesFromObject(objectToEdit);
+        super.onCreate(savedInstanceState);
+
+    }
+
+    protected void fillPreferencesFromObject(Object objectToEdit) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         SharedPreferences.Editor editor = preferences.edit();
         for (Pref pref : getPrefs()) {
@@ -43,15 +46,12 @@ public abstract class MyEditingPreferenceFragment extends MyPreferenceFragment {
             }
         }
         editor.commit();
-        super.onCreate(savedInstanceState);
-
-//        initializing = false;
     }
 
     @Override
     public void onPause() {
         super.onPause();
-        Object object = getObjectToEdit();
+        Object object = getObject();
         if (object != null) {
             fillFromPreferences(object);
             objectUpdated();
@@ -81,7 +81,7 @@ public abstract class MyEditingPreferenceFragment extends MyPreferenceFragment {
         }
     }
 
-    public void fillFromPreferences(Object object) {
+    private void fillFromPreferences(Object object) {
         SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(getActivity());
         for (Pref pref : getPrefs()) {
             Method setter = getSetter(object, pref);

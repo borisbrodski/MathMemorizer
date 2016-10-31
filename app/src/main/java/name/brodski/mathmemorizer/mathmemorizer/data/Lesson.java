@@ -18,6 +18,15 @@ import name.brodski.mathmemorizer.mathmemorizer.preferences.Pref;
 
 @Entity
 public class Lesson {
+    public static class LessonTemplate {
+        public String name;
+        public Lesson lesson;
+
+        public LessonTemplate(String name, Lesson lesson) {
+            this.name = name;
+            this.lesson = lesson;
+        }
+    }
     @Id
     private Long id;
 
@@ -229,21 +238,25 @@ public class Lesson {
         return this.lessonTTSQuestionLevel1;
     }
 
-    public Map<String, Lesson> getTemplates(Context context, LessonType type) {
-        Map<String, Lesson> map = new HashMap<>();
+    public static LessonTemplate[] getTemplates(Context context, LessonType type) {
         switch (type){
 
             case MULTIPLICATION:
-                map.put("Normal", new Lesson(null, LessonType.MULTIPLICATION, "Normal lesson", 10, 2, 5, 15000, 10000, 8000, 1000, 3000, true, false, false, true, true, 30));
-                map.put("Fast",   new Lesson(null, LessonType.MULTIPLICATION, "Fast lesson",   5, 2, 4, 8000,   7000,  5000,  500, 3000, true, false, false, true, true, 20));
-                break;
+                return new LessonTemplate[]{
+                        new LessonTemplate("Normal",
+                                new Lesson(null, LessonType.MULTIPLICATION, "Normal lesson", 10, 2, 5, 15000, 10000, 8000, 1000, 3000, true, false, false, true, true, 30)),
+                        new LessonTemplate("Fast",
+                                new Lesson(null, LessonType.MULTIPLICATION, "Fast lesson", 5, 2, 4, 8000, 7000, 5000, 500, 3000, true, false, false, true, true, 20))
+                };
+
             case DIVISION:
-                map.put("Normal", new Lesson(null, LessonType.DIVISION,       "Normal lesson", 10, 2, 5, 15000, 10000, 8000, 1000, 3000, true, false, false, true, true, 30));
-                map.put("Fast",   new Lesson(null, LessonType.DIVISION,       "Fast lesson",   5, 2, 4, 8000,   7000,  5000,  500, 3000, true, false, false, true, true, 20));
-                break;
-            default:
-                throw new RuntimeException("Unknown type: " + type);
+                return new LessonTemplate[]{
+                        new LessonTemplate("Normal",
+                                new Lesson(null, LessonType.DIVISION, "Normal lesson", 10, 2, 5, 15000, 10000, 8000, 1000, 3000, true, false, false, true, true, 30)),
+                        new LessonTemplate("Fast",
+                                new Lesson(null, LessonType.DIVISION, "Fast lesson", 5, 2, 4, 8000, 7000, 5000, 500, 3000, true, false, false, true, true, 20))
+                };
         }
-        return map;
+        throw new RuntimeException("Unknown type: " + type);
     }
 }

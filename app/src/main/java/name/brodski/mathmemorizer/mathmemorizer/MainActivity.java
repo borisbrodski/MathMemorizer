@@ -22,6 +22,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -30,11 +31,14 @@ import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.appindexing.Thing;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
+import java.util.Map;
 
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
+import name.brodski.mathmemorizer.mathmemorizer.data.LessonType;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskGenerator;
 import name.brodski.mathmemorizer.mathmemorizer.preferences.LessonEditActivity;
 import name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity;
@@ -497,8 +501,60 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onCreateNewLesson(MenuItem item) {
-        Intent intent = new Intent(this, LessonEditActivity.class);
-        startActivity(intent);
+        createNewLessonSelectType();
+        closeDrawer();
+    }
+
+    private void createNewLessonSelectType() {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select lesson type");
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.select_dialog_singlechoice);
+        for (LessonType type : LessonType.values()) {
+            arrayAdapter.add(type.getHRText());
+        }
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                LessonType type = LessonType.values()[which];
+                createNewLessonSelectTemplate(type);
+            }
+        });
+        builder.show();
+    }
+
+    private void createNewLessonSelectTemplate(final LessonType type) {
+        AlertDialog.Builder builder = new AlertDialog.Builder(this);
+        builder.setTitle("Select template");
+        final ArrayAdapter<String> arrayAdapter = new ArrayAdapter<>(this, android.R.layout.select_dialog_singlechoice);
+        Lesson.LessonTemplate[] templates = Lesson.getTemplates(this, type);
+
+        for (Lesson.LessonTemplate template : templates) {
+            arrayAdapter.add(template.name);
+        }
+
+        builder.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                dialog.dismiss();
+            }
+        });
+        builder.setAdapter(arrayAdapter, new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                Intent intent = new Intent(MainActivity.this, LessonEditActivity.class);
+                intent.putExtra(LessonEditActivity.EXTRA_LESSON_TYPE, type.ordinal());
+                intent.putExtra(LessonEditActivity.EXTRA_LESSON_TEMPLATE, which);
+                startActivity(intent);
+            }
+        });
+        builder.show();
     }
 
     public void onLessonDelete(MenuItem item) {
