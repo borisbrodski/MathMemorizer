@@ -3,20 +3,26 @@ package name.brodski.mathmemorizer.mathmemorizer.preferences;
 import android.annotation.TargetApi;
 import android.os.Build;
 import android.os.Bundle;
+import android.preference.Preference;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import java.util.List;
+
 import name.brodski.mathmemorizer.mathmemorizer.DB;
 import name.brodski.mathmemorizer.mathmemorizer.R;
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
+import name.brodski.mathmemorizer.mathmemorizer.data.TaskGenerator;
 
 public class LessonEditActivity extends AppCompatPreferenceActivity {
 
     public static final String EXTRA_LESSON_ID = LessonEditActivity.class.getName() + "#LESSON_ID";
     private Lesson lesson;
+    private LessonEditFragment fragment;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -31,12 +37,15 @@ public class LessonEditActivity extends AppCompatPreferenceActivity {
 
 
         // setContentView(android.R.layout.list_content);
-        getFragmentManager().beginTransaction().replace(android.R.id.content, new LessonEditFragment().setActivity(this)).commitAllowingStateLoss();
+        fragment = new LessonEditFragment();
+        fragment.setActivity(this);
+        getFragmentManager().beginTransaction().replace(android.R.id.content, fragment).commitAllowingStateLoss();
 
         long id = getIntent().getLongExtra(EXTRA_LESSON_ID, -1);
         if (id > -1) {
             lesson = DB.getDaoSession().getLessonDao().load(id);
         }
+
 //
 //        addPreferencesFromResource(R.xml.pref_lesson_edit);
 //        Preference prefName = findPreference("lesson_name");
@@ -61,20 +70,12 @@ public class LessonEditActivity extends AppCompatPreferenceActivity {
         return super.onCreateOptionsMenu(menu);
     }
 
-    @Override
-    protected void onStop() {
-        super.onStop();
-
-//        SharedPreferences preferences = PreferenceManager.getDefaultSharedPreferences(this);
-//        String newName = preferences.getString("lesson_name", "").trim();
-//        if (newName.length() > 0) {
-//            lesson.setName(newName);
-//        }
-//        DB.getDaoSession().getLessonDao().update(lesson);
-    }
-
     public void onCreateNewLesson(MenuItem item) {
-        Toast.makeText(this, "Creating new lesson", Toast.LENGTH_LONG).show();
+        Lesson lesson = new Lesson();
+        fragment.fillFromPreferences(lesson);
+        DB.getDaoSession().getLessonDao().insert(lesson);
+        TaskGenerator.generateTasks(this, lesson);
+        Toast.makeText(this, "New lesson created", Toast.LENGTH_LONG).show();
         finish();
     }
 
@@ -126,7 +127,7 @@ public class LessonEditActivity extends AppCompatPreferenceActivity {
         }
 
         @Override
-        protected Object geObjectToEdit() {
+        protected Object getObjectToEdit() {
             return activity.lesson;
         }
 
@@ -139,6 +140,34 @@ public class LessonEditActivity extends AppCompatPreferenceActivity {
         public LessonEditFragment setActivity(LessonEditActivity activity) {
             this.activity = activity;
             return this;
+        }
+
+        protected void objectUpdated() {
+            DB.getDaoSession().getLessonDao().update(activity.lesson);
+        }
+
+        @Override
+        protected boolean validate(Pref pref, Preference preference, Object newValue) {
+            String msg = null;
+            if (pref == QUESTIONS_PER_SESSION) {
+                try {
+                    int value = Integer.parseInt((String)newValue);
+                    if (value <= 0) {
+                        msg = "Invalid value. Please enter 1 or more";
+                    }
+                } catch (Exception e) {
+                    msg = "Invalid value. Please enter 1 or more";
+                }
+            }
+            if (msg != null) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
+                builder.setTitle("Invalid value");
+                builder.setMessage(msg);
+                builder.setPositiveButton(android.R.string.ok, null);
+                builder.show();
+                return false;
+            }
+            return true;
         }
     }
 

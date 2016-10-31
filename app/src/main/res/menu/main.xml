@@ -2,15 +2,21 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto">
     <item
-        android:id="@+id/action_settings"
-        android:orderInCategory="100"
-        android:title="@string/action_settings"
-        app:showAsAction="never"
-        android:onClick="onSettings"/>
-    <item
         android:id="@+id/lesson_settings"
-        android:orderInCategory="100"
+        android:orderInCategory="102"
         android:title="Edit lesson"
         app:showAsAction="never"
         android:onClick="onLessonEdit"/>
+    <item
+        android:id="@+id/lesson_delete"
+        android:orderInCategory="103"
+        android:title="Delete lesson"
+        app:showAsAction="never"
+        android:onClick="onLessonDelete"/>
+    <item
+        android:id="@+id/action_settings"
+        android:orderInCategory="200"
+        android:title="@string/action_settings"
+        app:showAsAction="never"
+        android:onClick="onSettings"/>
 </menu>

@@ -147,6 +147,8 @@ public class DB {
     }
 
 
+
+
     interface Getter<T> {T get(Task t);}
     interface Setter<T> {void set(Task t, T v);}
     private static class PropertyInfo<T> {
@@ -245,10 +247,8 @@ public class DB {
                 t.setScore(v);
             }
         }),
-
-
-
     };
+
     public static String dump(Lesson lesson, Context context) {
 
         StringWriter fw = new StringWriter();

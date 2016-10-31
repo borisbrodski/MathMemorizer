@@ -1,9 +1,14 @@
 package name.brodski.mathmemorizer.mathmemorizer.data;
 
+import android.content.Context;
+
 import org.greenrobot.greendao.annotation.Convert;
 import org.greenrobot.greendao.annotation.Entity;
 import org.greenrobot.greendao.annotation.Generated;
 import org.greenrobot.greendao.annotation.Id;
+
+import java.util.HashMap;
+import java.util.Map;
 
 import name.brodski.mathmemorizer.mathmemorizer.preferences.Pref;
 
@@ -222,5 +227,23 @@ public class Lesson {
 
     public boolean getLessonTTSQuestionLevel1() {
         return this.lessonTTSQuestionLevel1;
+    }
+
+    public Map<String, Lesson> getTemplates(Context context, LessonType type) {
+        Map<String, Lesson> map = new HashMap<>();
+        switch (type){
+
+            case MULTIPLICATION:
+                map.put("Normal", new Lesson(null, LessonType.MULTIPLICATION, "Normal lesson", 10, 2, 5, 15000, 10000, 8000, 1000, 3000, true, false, false, true, true, 30));
+                map.put("Fast",   new Lesson(null, LessonType.MULTIPLICATION, "Fast lesson",   5, 2, 4, 8000,   7000,  5000,  500, 3000, true, false, false, true, true, 20));
+                break;
+            case DIVISION:
+                map.put("Normal", new Lesson(null, LessonType.DIVISION,       "Normal lesson", 10, 2, 5, 15000, 10000, 8000, 1000, 3000, true, false, false, true, true, 30));
+                map.put("Fast",   new Lesson(null, LessonType.DIVISION,       "Fast lesson",   5, 2, 4, 8000,   7000,  5000,  500, 3000, true, false, false, true, true, 20));
+                break;
+            default:
+                throw new RuntimeException("Unknown type: " + type);
+        }
+        return map;
     }
 }

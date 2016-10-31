@@ -8,6 +8,7 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.PersistableBundle;
 import android.support.annotation.NonNull;
 import android.support.design.widget.FloatingActionButton;
 import android.support.design.widget.NavigationView;
@@ -19,6 +20,7 @@ import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.Menu;
 import android.view.MenuItem;
+import android.view.SubMenu;
 import android.view.View;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -40,10 +42,11 @@ import name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity;
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener {
 
-    public static final int LESSON_ID_OFFSET = 10000;
+//    public static final int LESSON_ID_OFFSET = 10000;
     public static final int RESULT_CANCELED = 1;
     public static final int RESULT_AUTOSTART = 2;
     public static final int AUTOSTART_SECONDS = 30;
+    private static final String KEY_LESSON_ID = MainActivity.class.getName() + "#lesson_id";
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -56,6 +59,7 @@ public class MainActivity extends AppCompatActivity
     private TextView textViewDueQuestions;
     private TextView textViewDebug;
 
+    private Long lessonId;
     private Lesson lesson;
     private MenuItem lessonMenuItem;
     private List<Lesson> lessons;
@@ -101,25 +105,6 @@ public class MainActivity extends AppCompatActivity
         NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
         navigationView.setNavigationItemSelectedListener(this);
 
-        Menu menu = navigationView.getMenu();
-        lessons = DB.getDaoSession().getLessonDao().loadAll();
-        Collections.sort(lessons, new Comparator<Lesson>() {
-            @Override
-            public int compare(Lesson o1, Lesson o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
-
-        for (int i = 0; i < lessons.size(); i++) {
-            Lesson lesson = lessons.get(i);
-            MenuItem item = menu.add(R.id.group_lessons, LESSON_ID_OFFSET + i, Menu.NONE, lesson.getName());
-            if (lessonMenuItem == null) {
-                lessonMenuItem = item;
-                item.setChecked(true);
-                this.lesson = lesson;
-            }
-        }
-
         // ATTENTION: This was auto-generated to implement the App Indexing API.
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client = new GoogleApiClient.Builder(this).addApi(AppIndex.API).build();
@@ -127,8 +112,29 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        if (lessonId != null) {
+            outState.putLong(KEY_LESSON_ID, lessonId);
+        } else {
+            outState.remove(KEY_LESSON_ID);
+        }
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        if (savedInstanceState.containsKey(KEY_LESSON_ID)) {
+            lessonId = savedInstanceState.getLong(KEY_LESSON_ID);
+        } else {
+            lessonId = null;
+        }
+    }
+
+    @Override
     protected void onResume() {
         super.onResume();
+        refreshLessons();
         updateStats();
     }
 
@@ -254,13 +260,13 @@ public class MainActivity extends AppCompatActivity
 
         }
 */
-        if (item.getItemId() >= LESSON_ID_OFFSET && item.getItemId() < LESSON_ID_OFFSET + lessons.size()) {
-            lessonMenuItem.setChecked(false);
-            item.setChecked(true);
-            lesson = lessons.get(item.getItemId() - LESSON_ID_OFFSET);
-            lessonMenuItem = item;
-            updateStats();
-        }
+//        if (item.getItemId() >= LESSON_ID_OFFSET && item.getItemId() < LESSON_ID_OFFSET + lessons.size()) {
+//            lessonMenuItem.setChecked(false);
+//            item.setChecked(true);
+//            lesson = lessons.get(item.getItemId() - LESSON_ID_OFFSET);
+//            lessonMenuItem = item;
+//            updateStats();
+//        }
         closeDrawer();
         return true;
     }
@@ -332,6 +338,64 @@ public class MainActivity extends AppCompatActivity
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         client.connect();
         AppIndex.AppIndexApi.start(client, getIndexApiAction());
+
+        refreshLessons();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        refreshLessons();
+    }
+
+    private void refreshLessons() {
+        NavigationView navigationView = (NavigationView) findViewById(R.id.nav_view);
+
+        Menu menu = navigationView.getMenu();
+        lessons = DB.getDaoSession().getLessonDao().loadAll();
+        Collections.sort(lessons, new Comparator<Lesson>() {
+            @Override
+            public int compare(Lesson o1, Lesson o2) {
+                return o1.getName().compareTo(o2.getName());
+            }
+        });
+
+        MenuItem groupItem = menu.findItem(R.id.item_lessons);
+        SubMenu subMenu = groupItem.getSubMenu();
+        subMenu.clear();
+        for (int i = 0; i < lessons.size(); i++) {
+            final Lesson lesson = lessons.get(i);
+            if (lesson.getId().equals(lessonId)) {
+                setCurrentLesson(lesson);
+            }
+            MenuItem item = subMenu.add(lesson.getName());
+            if (lessonMenuItem == null) {
+                lessonMenuItem = item;
+                item.setChecked(true);
+                setCurrentLesson(lesson);
+            }
+            item.setOnMenuItemClickListener(new MenuItem.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    lessonMenuItem.setChecked(false);
+                    item.setChecked(true);
+                    setCurrentLesson(lesson);
+                    lessonMenuItem = item;
+                    updateStats();
+                    closeDrawer();
+                    return true;
+                }
+            });
+        }
+    }
+
+    private void setCurrentLesson(Lesson lesson) {
+        this.lesson = lesson;
+        if (lesson != null) {
+            this.lessonId = lesson.getId();
+        } else {
+            this.lessonId = null;
+        }
     }
 
     @Override
@@ -435,5 +499,34 @@ public class MainActivity extends AppCompatActivity
     public void onCreateNewLesson(MenuItem item) {
         Intent intent = new Intent(this, LessonEditActivity.class);
         startActivity(intent);
+    }
+
+    public void onLessonDelete(MenuItem item) {
+        if (lesson.getId() != null) {
+            new AlertDialog.Builder(this)
+                    .setIcon(android.R.drawable.ic_dialog_alert)
+                    .setTitle("Removing " + lesson.getName())
+                    .setMessage("Delete lesson " + lesson.getName() + "?")
+                    .setPositiveButton("yes", new DialogInterface.OnClickListener()
+                    {
+                        @Override
+                        public void onClick(DialogInterface dialog, int which) {
+                            doDeleteLesson();
+                        }
+                    })
+                    .setNegativeButton("cancel", null)
+                    .show();
+        }
+    }
+
+    private void doDeleteLesson() {
+        DB.getDaoSession().getLessonDao().delete(lesson);
+        refreshLessons();
+        if (lessons.size() > 0) {
+            setCurrentLesson(lessons.get(0));
+        } else {
+            setCurrentLesson(null);
+        }
+        updateStats();
     }
 }

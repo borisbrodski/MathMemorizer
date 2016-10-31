@@ -13,8 +13,9 @@
         <activity
             android:name=".MainActivity"
             android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar">
+            android:theme="@style/AppTheme.NoActionBar"
             android:launchMode="singleTop"
+            >
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -23,11 +24,13 @@
         </activity>
         <activity
             android:name=".AndroidDatabaseManager"
+            android:launchMode="singleTop"
             android:theme="@style/Theme.AppCompat.Light" />
         <activity
             android:name=".PlayActivity"
             android:label="@string/title_activity_play"
             android:parentActivityName=".MainActivity"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar">
             <meta-data
                 android:name="android.support.PARENT_ACTIVITY"
@@ -40,6 +43,7 @@
         <activity
             android:name=".preferences.SettingsActivity"
             android:label="@string/title_activity_settings"
+            android:launchMode="singleTop"
             android:parentActivityName=".MainActivity"
             >
             <meta-data
@@ -49,6 +53,7 @@
         </activity>
         <activity android:name=".preferences.LessonEditActivity"
             android:label="Edit lesson"
+            android:launchMode="singleTop"
             android:parentActivityName=".MainActivity"
             >
             <meta-data
