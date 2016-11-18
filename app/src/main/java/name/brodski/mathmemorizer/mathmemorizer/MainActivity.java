@@ -49,7 +49,6 @@ public class MainActivity extends AppCompatActivity
 //    public static final int LESSON_ID_OFFSET = 10000;
     public static final int RESULT_CANCELED = 1;
     public static final int RESULT_AUTOSTART = 2;
-    public static final int AUTOSTART_SECONDS = 30;
     private static final String KEY_LESSON_ID = MainActivity.class.getName() + "#lesson_id";
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
@@ -143,7 +142,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void startAutostart() {
-        autostartSeconds = AUTOSTART_SECONDS;
+        autostartSeconds = (int)lesson.getLessonAutorestartPause();
 
         autostartDialog = new ProgressDialog(this);
         autostartDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -313,7 +312,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_AUTOSTART) {
+        if (resultCode == RESULT_AUTOSTART && lesson.isLessonAutorestart()) {
             startAutostart();
         }
     }

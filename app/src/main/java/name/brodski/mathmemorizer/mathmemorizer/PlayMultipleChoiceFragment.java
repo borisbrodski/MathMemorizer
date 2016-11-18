@@ -144,7 +144,7 @@ public class PlayMultipleChoiceFragment extends Fragment {
                     mListener.onAnswer(true);
                 }
             }
-        }, 500);
+        }, mListener.getCorrectAnswerPauseMillis());
         if (mListener != null) {
             mListener.onStopTimer(true);
         }
@@ -174,7 +174,7 @@ public class PlayMultipleChoiceFragment extends Fragment {
                     mListener.onAnswer(false);
                 }
             }
-        }, 6000);
+        }, mListener.getWrongAnswerPauseMillis());
         if (mListener != null) {
             mListener.onStopTimer(false);
         }
@@ -201,5 +201,7 @@ public class PlayMultipleChoiceFragment extends Fragment {
         void onAnswer(boolean correct);
         void onStopTimer(boolean correct);
         void speakAnswer();
+        long getWrongAnswerPauseMillis();
+        long getCorrectAnswerPauseMillis();
     }
 }

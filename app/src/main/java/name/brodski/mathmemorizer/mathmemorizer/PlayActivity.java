@@ -171,17 +171,30 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
 
         int count;
 
-        if (task.getScore() >= lesson.getLevel3MinScore() && choices.size() >= 6) {
+        if (task.getScore() >= lesson.getLevel3MinScore()) {
+            // Level 3
             count = 6;
-            mDeadline = lesson.getLevel3Millis();
-        } else if (task.getScore() >= lesson.getLevel2MinScore() && choices.size() >= 6) {
+            if (lesson.isLessonTTSQuestionLevel3()) {
+                speakTask();
+            }
+        } else if (task.getScore() >= lesson.getLevel2MinScore()) {
+            // Level 2
             count = 6;
-            mDeadline = lesson.getLevel2Millis();;
+            if (lesson.isLessonTTSQuestionLevel2()) {
+                speakTask();
+            }
         } else {
+            // Level 1
             count = 4;
-            speakTask();
-            mDeadline = lesson.getLevel1Millis();
+            if (lesson.isLessonTTSQuestionLevel1()) {
+                speakTask();
+            }
         }
+
+        if (count > 4 && choices.size() < 6) {
+            count = 4;
+        }
+
         mProgressCounter = 0;
 
 
@@ -381,7 +394,9 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     public void speakAnswer() {
-        ttobj.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+        if (lesson.isLessonTTSOnWrongAnswer()) {
+            ttobj.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+        }
     }
     public void speakTask() {
         ttobj.speak(toTaskSpeak, TextToSpeech.QUEUE_FLUSH, null);
