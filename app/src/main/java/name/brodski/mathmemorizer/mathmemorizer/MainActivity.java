@@ -142,6 +142,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void startAutostart() {
+        if (lesson == null) {
+            return;
+        }
         autostartSeconds = (int)lesson.getLessonAutorestartPause();
 
         autostartDialog = new ProgressDialog(this);
@@ -184,7 +187,7 @@ public class MainActivity extends AppCompatActivity
 
     private void updateStats() {
         if (lesson == null) {
-            textViewLesson.setText(lesson.getName());
+            textViewLesson.setText("Create new lesson!");
             textViewLabelQuestionsLearned.setText("");
             textViewLabelQuestionsLearning.setText("");
             textViewLabelQuestionsToLearn.setText("");
@@ -302,6 +305,9 @@ public class MainActivity extends AppCompatActivity
 //        db.closeDrawer();
 //        Snackbar.make(view, "Starting to play", Snackbar.LENGTH_LONG)
 //                .setAction("Action", null).show();
+        if (lesson == null) {
+            return;
+        }
         Intent intent = new Intent(this, PlayActivity.class);
         Bundle args = new Bundle();
         args.putLong(PlayActivity.LESSON_ID, lesson.getId());
@@ -312,7 +318,7 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-        if (resultCode == RESULT_AUTOSTART && lesson.isLessonAutorestart()) {
+        if (resultCode == RESULT_AUTOSTART && lesson != null && lesson.isLessonAutorestart()) {
             startAutostart();
         }
     }
@@ -417,6 +423,9 @@ public class MainActivity extends AppCompatActivity
         startActivity(dbmanager);
     }
     public void onRegenerateData(MenuItem item) {
+        if (lesson == null) {
+            return;
+        }
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("DELETING ALL DATA IN LESSON " + lesson.getName())
@@ -435,6 +444,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onDueAllTasks(MenuItem item) {
+        if (lesson == null) {
+            return;
+        }
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("Due all tasks for '" + lesson.getName() + "'")
@@ -458,6 +470,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onSendDB(MenuItem item) {
+        if (lesson == null) {
+            return;
+        }
         Intent sendIntent = new Intent();
         sendIntent.setAction(Intent.ACTION_SEND);
         sendIntent.putExtra(Intent.EXTRA_TEXT, DB.dump(lesson, this));
@@ -468,6 +483,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onImportFromClipboard(MenuItem item) {
+        if (lesson == null) {
+            return;
+        }
         new AlertDialog.Builder(this)
                 .setIcon(android.R.drawable.ic_dialog_alert)
                 .setTitle("DELETING ALL DATA IN LESSON " + lesson.getName())
@@ -492,7 +510,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onLessonEdit(MenuItem item) {
-        if (lesson.getId() != null) {
+        if (lesson != null) {
             Intent intent = new Intent(this, LessonEditActivity.class);
             intent.putExtra(LessonEditActivity.EXTRA_LESSON_ID, lesson.getId());
             startActivity(intent);
@@ -557,7 +575,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     public void onLessonDelete(MenuItem item) {
-        if (lesson.getId() != null) {
+        if (lesson != null) {
             new AlertDialog.Builder(this)
                     .setIcon(android.R.drawable.ic_dialog_alert)
                     .setTitle("Removing " + lesson.getName())
@@ -575,6 +593,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void doDeleteLesson() {
+        if (lesson == null) {
+            return;
+        }
         DB.getDaoSession().getLessonDao().delete(lesson);
         refreshLessons();
         if (lessons.size() > 0) {

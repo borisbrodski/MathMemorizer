@@ -3,6 +3,7 @@ package name.brodski.mathmemorizer.mathmemorizer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
+import android.speech.tts.UtteranceProgressListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -23,6 +24,7 @@ import java.util.Random;
 import java.util.Set;
 
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
+import name.brodski.mathmemorizer.mathmemorizer.data.LessonType;
 import name.brodski.mathmemorizer.mathmemorizer.data.Task;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskDao;
 
@@ -54,6 +56,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     private List<Long> lastTaskIds = new ArrayList<>();
     private String toSpeak;
     private String toTaskSpeak;
+    private boolean ttsInitialized;
+    private String toSpeakAfterInitialization;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -91,7 +95,13 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             public void onInit(int status) {
                 if (status == TextToSpeech.SUCCESS) {
                     ttobj.setLanguage(Locale.GERMANY);
-
+                    synchronized (PlayActivity.this) {
+                        ttsInitialized = true;
+                        if (toSpeakAfterInitialization != null) {
+                            speak(toSpeakAfterInitialization);
+                            toSpeakAfterInitialization = null;
+                        }
+                    }
                 } else {
                     Toast.makeText(PlayActivity.this, "TTS Initilization Failed", Toast.LENGTH_LONG).show();
                 }
@@ -109,7 +119,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         StringBuilder sb = new StringBuilder();
         int op1;
         int op2;
-        if (RANDOM.nextBoolean()) {
+        if (lesson.getType() == LessonType.DIVISION || RANDOM.nextBoolean()) {
             op1 = task.getOperand1();
             op2 = task.getOperand2();
         } else {
@@ -129,8 +139,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
                 textViewTask.setText("" + op1 + " * " + op2 + " = ?");
                 break;
             case DIVISION:
-                result = op1;
-                op1 = op1 * op2;
+                result = op1 / op2;
                 toTaskSpeak = ""  + op1 + " durch " + op2;
                 toSpeak = ""  + op1 + " durch " + op2 + " ist " + result;
                 textViewTask.setText("" + op1 + " : " + op2 + " = ?");
@@ -174,18 +183,21 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         if (task.getScore() >= lesson.getLevel3MinScore()) {
             // Level 3
             count = 6;
+            mDeadline = lesson.getLevel3Millis();
             if (lesson.isLessonTTSQuestionLevel3()) {
                 speakTask();
             }
         } else if (task.getScore() >= lesson.getLevel2MinScore()) {
             // Level 2
             count = 6;
+            mDeadline = lesson.getLevel2Millis();
             if (lesson.isLessonTTSQuestionLevel2()) {
                 speakTask();
             }
         } else {
             // Level 1
             count = 4;
+            mDeadline = lesson.getLevel1Millis();
             if (lesson.isLessonTTSQuestionLevel1()) {
                 speakTask();
             }
@@ -395,10 +407,31 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
 
     public void speakAnswer() {
         if (lesson.isLessonTTSOnWrongAnswer()) {
-            ttobj.speak(toSpeak, TextToSpeech.QUEUE_FLUSH, null);
+            speak(toSpeak);
         }
     }
+
+    @Override
+    public long getWrongAnswerPauseMillis() {
+        return lesson.getWrongAnswerPauseMillis();
+    }
+
+    @Override
+    public long getCorrectAnswerPauseMillis() {
+        return lesson.getCorrectAnswerPauseMillis();
+    }
+
     public void speakTask() {
-        ttobj.speak(toTaskSpeak, TextToSpeech.QUEUE_FLUSH, null);
+        speak(toTaskSpeak);
+    }
+    public synchronized void speak(String text) {
+        if (!ttsInitialized) {
+            toSpeakAfterInitialization = text;
+        } else {
+            if (ttobj.isSpeaking()) {
+                ttobj.stop();
+            }
+            ttobj.speak(text, TextToSpeech.QUEUE_FLUSH, null);
+        }
     }
 }

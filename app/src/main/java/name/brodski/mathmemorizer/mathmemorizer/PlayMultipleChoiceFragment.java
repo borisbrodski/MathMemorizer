@@ -104,6 +104,7 @@ public class PlayMultipleChoiceFragment extends Fragment {
                 layoutParams.setMargins(marginPx, marginPx, marginPx, marginPx);
                 final int index = column + row * columns;
                 button.setText(mChoices[index]);
+                button.setSoundEffectsEnabled(false);
                 button.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {

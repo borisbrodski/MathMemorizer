@@ -94,56 +94,56 @@ public class DB {
         if (builder.count() > 0) {
             return ;
         }
-        Lesson lesson = new Lesson();
-        lesson.setName("Learn");
-        lesson.setLevel1Millis(30000);
-        lesson.setLevel2Millis(25000);
-        lesson.setLevel3Millis(18000);
-
-        lesson.setLevel2MinScore(3);
-        lesson.setLevel3MinScore(5);
-
-        lesson.setCorrectAnswerPauseMillis(1500);
-        lesson.setWrongAnswerPauseMillis(5000);
-        lesson.setTasksPerSession(8);
-
-        DB.getDaoSession().getLessonDao().insert(lesson);
-
-
-
-        lesson = new Lesson();
-        lesson.setName("Turbo");
-
-        lesson.setLevel1Millis(15000);
-        lesson.setLevel2Millis(10000);
-        lesson.setLevel3Millis(8000);
-
-        lesson.setLevel2MinScore(2);
-        lesson.setLevel3MinScore(4);
-
-        lesson.setCorrectAnswerPauseMillis(800);
-        lesson.setWrongAnswerPauseMillis(2000);
-        lesson.setTasksPerSession(4);
-
-        DB.getDaoSession().getLessonDao().insert(lesson);
-
-
-
-        lesson = new Lesson();
-        lesson.setName("Ultra Schnell");
-
-        lesson.setLevel1Millis(6000);
-        lesson.setLevel2Millis(5000);
-        lesson.setLevel3Millis(4000);
-
-        lesson.setLevel2MinScore(2);
-        lesson.setLevel3MinScore(4);
-
-        lesson.setCorrectAnswerPauseMillis(800);
-        lesson.setWrongAnswerPauseMillis(2000);
-        lesson.setTasksPerSession(4);
-
-        DB.getDaoSession().getLessonDao().insert(lesson);
+//        Lesson lesson = new Lesson();
+//        lesson.setName("Learn");
+//        lesson.setLevel1Millis(30000);
+//        lesson.setLevel2Millis(25000);
+//        lesson.setLevel3Millis(18000);
+//
+//        lesson.setLevel2MinScore(3);
+//        lesson.setLevel3MinScore(5);
+//
+//        lesson.setCorrectAnswerPauseMillis(1500);
+//        lesson.setWrongAnswerPauseMillis(5000);
+//        lesson.setTasksPerSession(8);
+//
+//        DB.getDaoSession().getLessonDao().insert(lesson);
+//
+//
+//
+//        lesson = new Lesson();
+//        lesson.setName("Turbo");
+//
+//        lesson.setLevel1Millis(15000);
+//        lesson.setLevel2Millis(10000);
+//        lesson.setLevel3Millis(8000);
+//
+//        lesson.setLevel2MinScore(2);
+//        lesson.setLevel3MinScore(4);
+//
+//        lesson.setCorrectAnswerPauseMillis(800);
+//        lesson.setWrongAnswerPauseMillis(2000);
+//        lesson.setTasksPerSession(4);
+//
+//        DB.getDaoSession().getLessonDao().insert(lesson);
+//
+//
+//
+//        lesson = new Lesson();
+//        lesson.setName("Ultra Schnell");
+//
+//        lesson.setLevel1Millis(6000);
+//        lesson.setLevel2Millis(5000);
+//        lesson.setLevel3Millis(4000);
+//
+//        lesson.setLevel2MinScore(2);
+//        lesson.setLevel3MinScore(4);
+//
+//        lesson.setCorrectAnswerPauseMillis(800);
+//        lesson.setWrongAnswerPauseMillis(2000);
+//        lesson.setTasksPerSession(4);
+//
+//        DB.getDaoSession().getLessonDao().insert(lesson);
     }
 
 
