@@ -3,7 +3,6 @@ package name.brodski.mathmemorizer.mathmemorizer;
 import android.os.Bundle;
 import android.os.Handler;
 import android.speech.tts.TextToSpeech;
-import android.speech.tts.UtteranceProgressListener;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
@@ -32,19 +31,21 @@ import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
 
-public class PlayActivity extends AppCompatActivity implements PlayMultipleChoiceFragment.OnFragmentInteractionListener {
+public class PlayActivity extends AppCompatActivity implements PlayMultipleChoiceFragment.OnFragmentInteractionListener{
+
     private static final int DIFFERENT_TASK_COUNT = 3;
     public static final Random RANDOM = new Random(System.currentTimeMillis());
     public static final int PROGRESS_UPDATES_IN_SEC = 10;
     public static final String LESSON_ID = "LESSON_ID";
 
     private Lesson lesson;
-    private PlayMultipleChoiceFragment fragment;
+    private PlayAbstractFragment fragment;
     private TextView textViewTask;
     private ProgressBar progressBar;
     private long mDeadline;
     private long mProgressCounter;
-    private Handler handler = new Handler();
+    private Handler mHandlerWaitingForAnswer = new Handler();
+    private Handler mHandlerOnAnswer = new Handler();
     private TextView textViewDebug;
     private TextView textViewLessonName;
     private boolean isPaused = true;
@@ -246,8 +247,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     public void setupProgressHandler() {
-        handler.removeCallbacksAndMessages(null);
-        handler.postDelayed(new Runnable() {
+        mHandlerWaitingForAnswer.removeCallbacksAndMessages(null);
+        mHandlerWaitingForAnswer.postDelayed(new Runnable() {
             @Override
             public void run() {
                 if (mDeadline == 0 || isPaused || isFinishing()) {
@@ -262,6 +263,11 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
                 }
             }
         }, 1000 / PROGRESS_UPDATES_IN_SEC);
+    }
+
+    public void stopProgressHandler() {
+        mHandlerWaitingForAnswer.removeCallbacksAndMessages(null);
+        progressBar.setVisibility(View.INVISIBLE);
     }
 
     private void addChoice(Collection<String> choices, int choice) {
@@ -347,12 +353,33 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     private void timeout() {
-        //onAnswer(false);
-        fragment.wrongAnswer(null);
+        fragment.timeout();
     }
 
     @Override
-    public void onAnswer(boolean correct) {
+    public void onAnswer(final boolean correct) {
+        if (isFinishing()) {
+            return;
+        }
+        stopProgressHandler();
+        mHandlerOnAnswer.removeCallbacksAndMessages(null);
+        long timeout;
+        if (correct) {
+            timeout = lesson.getCorrectAnswerPauseMillis();
+        } else {
+            timeout = lesson.getWrongAnswerPauseMillis();
+        }
+        mHandlerOnAnswer.postDelayed(new Runnable() {
+            @Override
+            public void run() {
+                if (isFinishing()) {
+                    return;
+                }
+                taskFinished(correct);
+            }
+        }, timeout);
+    }
+    public void taskFinished(boolean correct) {
         if (correct) {
             successTaskCount++;
             task.setScore(task.getScore() + 1);
@@ -383,7 +410,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         } else {
             failTaskCount++;
             if (task.getScore() > 5) {
-                task.setScore(3);
+                task.setScore(lesson.getLevel2MinScore());
             } else {
                 task.setScore(0);
             }
@@ -401,26 +428,10 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         }
     }
 
-    @Override
-    public void onStopTimer(boolean correct) {
-        mDeadline = 0;
-        progressBar.setVisibility(View.INVISIBLE);
-    }
-
     public void speakAnswer() {
         if (lesson.isLessonTTSOnWrongAnswer()) {
             speak(toSpeak);
         }
-    }
-
-    @Override
-    public long getWrongAnswerPauseMillis() {
-        return lesson.getWrongAnswerPauseMillis();
-    }
-
-    @Override
-    public long getCorrectAnswerPauseMillis() {
-        return lesson.getCorrectAnswerPauseMillis();
     }
 
     public void speakTask() {

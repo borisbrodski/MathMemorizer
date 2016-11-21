@@ -35,8 +35,8 @@ public class Lesson {
 
     private String name;
     private long tasksPerSession;
-    private long level2MinScore;
-    private long level3MinScore;
+    private int level2MinScore;
+    private int level3MinScore;
     private long level1Millis;
     private long level2Millis;
     private long level3Millis;
@@ -56,13 +56,10 @@ public class Lesson {
     public Lesson() {
     }
 
-    @Generated(hash = 547008348)
-    public Lesson(Long id, LessonType type, String name, long tasksPerSession,
-            long level2MinScore, long level3MinScore, long level1Millis, long level2Millis,
-            long level3Millis, long correctAnswerPauseMillis, long wrongAnswerPauseMillis,
-            boolean lessonTTSQuestionLevel1, boolean lessonTTSQuestionLevel2,
-            boolean lessonTTSQuestionLevel3, boolean lessonTTSOnWrongAnswer,
-            boolean lessonAutorestart, long lessonAutorestartPause) {
+    @Generated(hash = 943404543)
+    public Lesson(Long id, LessonType type, String name, long tasksPerSession, int level2MinScore, int level3MinScore, long level1Millis, long level2Millis,
+            long level3Millis, long correctAnswerPauseMillis, long wrongAnswerPauseMillis, boolean lessonTTSQuestionLevel1, boolean lessonTTSQuestionLevel2,
+            boolean lessonTTSQuestionLevel3, boolean lessonTTSOnWrongAnswer, boolean lessonAutorestart, long lessonAutorestartPause) {
         this.id = id;
         this.type = type;
         this.name = name;
@@ -98,19 +95,19 @@ public class Lesson {
         this.tasksPerSession = tasksPerSession;
     }
 
-    public long getLevel2MinScore() {
+    public int getLevel2MinScore() {
         return level2MinScore;
     }
 
-    public void setLevel2MinScore(long level2MinScore) {
+    public void setLevel2MinScore(int level2MinScore) {
         this.level2MinScore = level2MinScore;
     }
 
-    public long getLevel3MinScore() {
+    public int getLevel3MinScore() {
         return level3MinScore;
     }
 
-    public void setLevel3MinScore(long level3MinScore) {
+    public void setLevel3MinScore(int level3MinScore) {
         this.level3MinScore = level3MinScore;
     }
 

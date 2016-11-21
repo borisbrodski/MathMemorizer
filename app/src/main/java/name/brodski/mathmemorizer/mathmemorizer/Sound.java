@@ -37,6 +37,9 @@ public enum Sound {
 
             }
             mp = MediaPlayer.create(context, uri);
+            if (mp == null) {
+                return;
+            }
             mp.setLooping(false);
             mp.setOnCompletionListener(new MediaPlayer.OnCompletionListener() {
                 @Override

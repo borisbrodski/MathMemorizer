@@ -25,10 +25,9 @@ import java.util.Arrays;
  * Use the {@link PlayMultipleChoiceFragment#newInstance} factory method to
  * create an instance of this fragment.
  */
-public class PlayMultipleChoiceFragment extends Fragment {
+public class PlayMultipleChoiceFragment extends PlayAbstractFragment {
     private static final String ARG_CHOICES = "choices";
     private static final String ARG_ANSWER = "answer";
-    private Handler mHandler = new Handler();
     private CharSequence[] mChoices;
     private int mAnswer;
     private boolean waitForAnswer;
@@ -113,9 +112,9 @@ public class PlayMultipleChoiceFragment extends Fragment {
                         }
                         Log.i("DEBUG", "if (index == mAnswer) -- I: " + index + ", mA: " + mAnswer);
                         if (index == mAnswer) {
-                            correctAnswer();
+                            answer(true, null);
                         } else {
-                            wrongAnswer(v);
+                            answer(false, v);
                         }
                     }
                 });
@@ -130,56 +129,66 @@ public class PlayMultipleChoiceFragment extends Fragment {
         waitForAnswer = true;
     }
 
-    private void correctAnswer() {
+    private void answer(boolean correct, View wrongButton) {
         waitForAnswer = false;
-        Sound.OK.play(getActivity());
         mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
-        mHandler.removeCallbacksAndMessages(null);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isRemoving()) {
-                    return;
-                }
-                if (mListener != null) {
-                    mListener.onAnswer(true);
-                }
+
+        if (!correct) {
+            if (wrongButton != null) {
+                wrongButton.setEnabled(false);
             }
-        }, mListener.getCorrectAnswerPauseMillis());
-        if (mListener != null) {
-            mListener.onStopTimer(true);
         }
+
+        mListener.onAnswer(correct);
+
+//        Sound.OK.play(getActivity());
+//        mHandler.removeCallbacksAndMessages(null);
+//        mHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (isRemoving()) {
+//                    return;
+//                }
+//                if (mListener != null) {
+//                    mListener.onAnswer(true);
+//                }
+//            }
+//        }, mListener.getCorrectAnswerPauseMillis());
+//        if (mListener != null) {
+//            mListener.onStopTimer(true);
+//        }
     }
-    void wrongAnswer(View view) {
-        waitForAnswer = false;
-        Sound.ERROR.play(getActivity(), new Runnable() {
-            @Override
-            public void run() {
-                if (mListener != null) {
-                    mListener.speakAnswer();
-                }
-            }
-        });
-        mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
-        if (view != null) {
-            view.setEnabled(false);
-        }
-        mHandler.removeCallbacksAndMessages(null);
-        mHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isRemoving()) {
-                    return;
-                }
-                if (mListener != null) {
-                    mListener.onAnswer(false);
-                }
-            }
-        }, mListener.getWrongAnswerPauseMillis());
-        if (mListener != null) {
-            mListener.onStopTimer(false);
-        }
+    public void timeout() {
+        answer(false, null);
     }
+
+//    void wrongAnswer(View view) {
+//        waitForAnswer = false;
+//        Sound.ERROR.play(getActivity(), new Runnable() {
+//            @Override
+//            public void run() {
+//                if (mListener != null) {
+//                    mListener.speakAnswer();
+//                }
+//            }
+//        });
+//        mAnswerButton.setBackgroundResource(R.color.correctAnswerButton);
+//        mHandler.removeCallbacksAndMessages(null);
+//        mHandler.postDelayed(new Runnable() {
+//            @Override
+//            public void run() {
+//                if (isRemoving()) {
+//                    return;
+//                }
+//                if (mListener != null) {
+//                    mListener.onAnswer(false);
+//                }
+//            }
+//        }, mListener.getWrongAnswerPauseMillis());
+//        if (mListener != null) {
+//            mListener.onStopTimer(false);
+//        }
+//    }
 
     @Override
     public void onAttach(Context context) {
@@ -198,11 +207,4 @@ public class PlayMultipleChoiceFragment extends Fragment {
         mListener = null;
     }
 
-    public interface OnFragmentInteractionListener {
-        void onAnswer(boolean correct);
-        void onStopTimer(boolean correct);
-        void speakAnswer();
-        long getWrongAnswerPauseMillis();
-        long getCorrectAnswerPauseMillis();
-    }
 }

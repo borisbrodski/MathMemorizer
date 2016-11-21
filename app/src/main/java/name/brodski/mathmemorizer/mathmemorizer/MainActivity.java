@@ -50,6 +50,7 @@ public class MainActivity extends AppCompatActivity
     public static final int RESULT_CANCELED = 1;
     public static final int RESULT_AUTOSTART = 2;
     private static final String KEY_LESSON_ID = MainActivity.class.getName() + "#lesson_id";
+    private static final String KEY_AUTOSTART_SECONDS = "#autostart_seconds";
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -122,6 +123,7 @@ public class MainActivity extends AppCompatActivity
         } else {
             outState.remove(KEY_LESSON_ID);
         }
+        outState.putInt(KEY_AUTOSTART_SECONDS, autostartSeconds);
     }
 
     @Override
@@ -132,6 +134,11 @@ public class MainActivity extends AppCompatActivity
         } else {
             lessonId = null;
         }
+        if (savedInstanceState.containsKey(KEY_AUTOSTART_SECONDS)) {
+            autostartSeconds = savedInstanceState.getInt(KEY_AUTOSTART_SECONDS);
+        } else {
+            autostartSeconds = 0;
+        }
     }
 
     @Override
@@ -139,19 +146,29 @@ public class MainActivity extends AppCompatActivity
         super.onResume();
         refreshLessons();
         updateStats();
+        if (autostartSeconds > 0) {
+            resumeAutostart();
+        }
     }
 
     private void startAutostart() {
-        if (lesson == null) {
+        autostartSeconds = (int)lesson.getLessonAutorestartPause();
+        // resumeAutostart();
+    }
+
+
+    private void resumeAutostart() {
+        if (lesson == null || isFinishing()) {
             return;
         }
-        autostartSeconds = (int)lesson.getLessonAutorestartPause();
 
-        autostartDialog = new ProgressDialog(this);
-        autostartDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+        if (autostartDialog == null) {
+            autostartDialog = new ProgressDialog(this);
+            autostartDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+            autostartDialog.setIndeterminate(true);
+            autostartDialog.setCanceledOnTouchOutside(false);
+        }
         autostartDialog.setMessage(getAutostartMessage());
-        autostartDialog.setIndeterminate(true);
-        autostartDialog.setCanceledOnTouchOutside(false);
         autostartDialog.show();
 
         autostartHandlerStart();
@@ -162,7 +179,8 @@ public class MainActivity extends AppCompatActivity
         autostartHandler.postDelayed(new Runnable() {
             @Override
             public void run() {
-                if (isFinishing() || !autostartDialog.isShowing()) {
+                // CHECK FOR VISIBILITY
+                if (isFinishing() || autostartDialog == null || !autostartDialog.isShowing()) {
                     return;
                 }
                 autostartSeconds--;
@@ -415,6 +433,10 @@ public class MainActivity extends AppCompatActivity
         // See https://g.co/AppIndexing/AndroidStudio for more information.
         AppIndex.AppIndexApi.end(client, getIndexApiAction());
         client.disconnect();
+        if (autostartDialog != null) {
+            autostartDialog.dismiss();
+            autostartDialog = null;
+        }
     }
 
     public void onDbAdmin(MenuItem item) {
