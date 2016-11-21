@@ -49,6 +49,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     private TextView textViewLessonName;
     private boolean isPaused = true;
     private int successTaskCount;
+    private int failTaskCount;
     private TextToSpeech ttobj;
 
     // ---------- STATE ----------
@@ -380,6 +381,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
                     break;
             }
         } else {
+            failTaskCount++;
             if (task.getScore() > 5) {
                 task.setScore(3);
             } else {
@@ -390,7 +392,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         task.setLastShow(System.currentTimeMillis());
         DB.getDaoSession().getTaskDao().update(task);
 
-        if (successTaskCount < lesson.getTasksPerSession()) {
+        if ((successTaskCount + failTaskCount) < lesson.getTasksPerSession()) {
             task = nextTask();
             showTask();
         } else {
