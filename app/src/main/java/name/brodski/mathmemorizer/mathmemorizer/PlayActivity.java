@@ -60,6 +60,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     private String toTaskSpeak;
     private boolean ttsInitialized;
     private String toSpeakAfterInitialization;
+    private String correctAnswer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -149,7 +150,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             default:
                 throw new RuntimeException("Unknown " + lesson.getType());
         }
-
+        correctAnswer = "" + result;
         Set<String> choices = new HashSet<>();
         addChoice(choices, result - 3);
         addChoice(choices, result - 2);
@@ -220,7 +221,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         String resultString = choicesList.get(choicesList.size() - 1);
         shuffle(choicesList, RANDOM);
 
-        fragment = PlayMultipleChoiceFragment.newInstance(choicesList.toArray(new CharSequence[0]), choicesList.indexOf(resultString));
+        fragment = PlayAbstractFragment.newInstance(new PlayKeyPadFragment(), choicesList.toArray(new CharSequence[0]), choicesList.indexOf(resultString));
+        // fragment = PlayAbstractFragment.newInstance(new PlayMultipleChoiceFragment(), choicesList.toArray(new CharSequence[0]), choicesList.indexOf(resultString));
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_choice, fragment).commitAllowingStateLoss();
 
         progressBar.setProgress(0);
@@ -361,6 +363,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         if (isFinishing()) {
             return;
         }
+        updateAnswer(correctAnswer);
         stopProgressHandler();
         mHandlerOnAnswer.removeCallbacksAndMessages(null);
         long timeout;
@@ -446,5 +449,19 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             }
             ttobj.speak(text, TextToSpeech.QUEUE_FLUSH, null);
         }
+    }
+
+    @Override
+    public void updatePartialAnswer(String partialAnswer) {
+        updateAnswer(partialAnswer + "?");
+    }
+
+    private void updateAnswer(String answer) {
+        String task = textViewTask.getText().toString();
+        int i = task.indexOf('=');
+        if (i < 0) {
+            throw new RuntimeException("Task doesn't contain '='");
+        }
+        textViewTask.setText(task.substring(0, i) + "= " + answer);
     }
 }

@@ -26,27 +26,16 @@ import java.util.Arrays;
  * create an instance of this fragment.
  */
 public class PlayMultipleChoiceFragment extends PlayAbstractFragment {
-    private static final String ARG_CHOICES = "choices";
-    private static final String ARG_ANSWER = "answer";
     private CharSequence[] mChoices;
     private int mAnswer;
     private boolean waitForAnswer;
 
-    private OnFragmentInteractionListener mListener;
     private Button mAnswerButton;
 
     public PlayMultipleChoiceFragment() {
         // Required empty public constructor
     }
 
-    public static PlayMultipleChoiceFragment newInstance(CharSequence[] choices, int answer) {
-        PlayMultipleChoiceFragment fragment = new PlayMultipleChoiceFragment();
-        Bundle args = new Bundle();
-        args.putCharSequenceArray(ARG_CHOICES, choices);
-        args.putInt(ARG_ANSWER, answer);
-        fragment.setArguments(args);
-        return fragment;
-    }
 
     @Override
     public void onCreate(Bundle savedInstanceState) {
@@ -139,7 +128,7 @@ public class PlayMultipleChoiceFragment extends PlayAbstractFragment {
             }
         }
 
-        mListener.onAnswer(correct);
+        getListener().onAnswer(correct);
 
 //        Sound.OK.play(getActivity());
 //        mHandler.removeCallbacksAndMessages(null);
@@ -190,21 +179,5 @@ public class PlayMultipleChoiceFragment extends PlayAbstractFragment {
 //        }
 //    }
 
-    @Override
-    public void onAttach(Context context) {
-        super.onAttach(context);
-        if (context instanceof OnFragmentInteractionListener) {
-            mListener = (OnFragmentInteractionListener) context;
-        } else {
-            throw new RuntimeException(context.toString()
-                    + " must implement OnFragmentInteractionListener");
-        }
-    }
-
-    @Override
-    public void onDetach() {
-        super.onDetach();
-        mListener = null;
-    }
 
 }
