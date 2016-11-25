@@ -18,6 +18,7 @@ import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AlertDialog;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.SubMenu;
@@ -37,20 +38,21 @@ import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
 
+import icepick.Icepick;
+import icepick.State;
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
 import name.brodski.mathmemorizer.mathmemorizer.data.LessonType;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskGenerator;
 import name.brodski.mathmemorizer.mathmemorizer.preferences.LessonEditActivity;
 import name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity;
+import name.brodski.mathmemorizer.mathmemorizer.tools.PersistentTimer;
 
 public class MainActivity extends AppCompatActivity
-        implements NavigationView.OnNavigationItemSelectedListener {
+        implements NavigationView.OnNavigationItemSelectedListener, PersistentTimer.Listener {
 
 //    public static final int LESSON_ID_OFFSET = 10000;
     public static final int RESULT_CANCELED = 1;
     public static final int RESULT_AUTOSTART = 2;
-    private static final String KEY_LESSON_ID = MainActivity.class.getName() + "#lesson_id";
-    private static final String KEY_AUTOSTART_SECONDS = "#autostart_seconds";
     /**
      * ATTENTION: This was auto-generated to implement the App Indexing API.
      * See https://g.co/AppIndexing/AndroidStudio for more information.
@@ -63,14 +65,15 @@ public class MainActivity extends AppCompatActivity
     private TextView textViewDueQuestions;
     private TextView textViewDebug;
 
-    private Long lessonId;
+    @State
+    Long lessonId;
+
     private Lesson lesson;
     private MenuItem lessonMenuItem;
     private List<Lesson> lessons;
 
     private ProgressDialog autostartDialog;
-    private int autostartSeconds;
-    private Handler autostartHandler = new Handler();
+    private PersistentTimer autostartTimer = new PersistentTimer(this);
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -118,90 +121,31 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (lessonId != null) {
-            outState.putLong(KEY_LESSON_ID, lessonId);
-        } else {
-            outState.remove(KEY_LESSON_ID);
-        }
-        outState.putInt(KEY_AUTOSTART_SECONDS, autostartSeconds);
+        Icepick.saveInstanceState(this, outState);
+        autostartTimer.onSaveInstanceState(outState);
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        if (savedInstanceState.containsKey(KEY_LESSON_ID)) {
-            lessonId = savedInstanceState.getLong(KEY_LESSON_ID);
-        } else {
-            lessonId = null;
-        }
-        if (savedInstanceState.containsKey(KEY_AUTOSTART_SECONDS)) {
-            autostartSeconds = savedInstanceState.getInt(KEY_AUTOSTART_SECONDS);
-        } else {
-            autostartSeconds = 0;
-        }
+        Icepick.restoreInstanceState(this, savedInstanceState);
+        autostartTimer.onRestoreInstanceState(savedInstanceState);
     }
 
     @Override
     protected void onResume() {
         super.onResume();
+        autostartTimer.onActivityResume();
         refreshLessons();
         updateStats();
-        if (autostartSeconds > 0) {
-            resumeAutostart();
-        }
     }
 
     private void startAutostart() {
-        autostartSeconds = (int)lesson.getLessonAutorestartPause();
-        // resumeAutostart();
+        long autostartSeconds = lesson.getLessonAutorestartPause();
+        autostartTimer.schedule(autostartSeconds * 1000, null, (int)autostartSeconds);
     }
 
 
-    private void resumeAutostart() {
-        if (lesson == null || isFinishing()) {
-            return;
-        }
-
-        if (autostartDialog == null) {
-            autostartDialog = new ProgressDialog(this);
-            autostartDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-            autostartDialog.setIndeterminate(true);
-            autostartDialog.setCanceledOnTouchOutside(false);
-        }
-        autostartDialog.setMessage(getAutostartMessage());
-        autostartDialog.show();
-
-        autostartHandlerStart();
-    }
-
-    private void autostartHandlerStart() {
-        autostartHandler.removeCallbacksAndMessages(null);
-        autostartHandler.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                // CHECK FOR VISIBILITY
-                if (isFinishing() || autostartDialog == null || !autostartDialog.isShowing()) {
-                    return;
-                }
-                autostartSeconds--;
-                if (autostartSeconds == 0) {
-                    autostartDialog.hide();
-                    onPlay(null);
-                } else {
-                    autostartDialog.setMessage(getAutostartMessage());
-                    if (autostartSeconds <= 5) {
-                        Sound.GET_READY.play(MainActivity.this);
-                    }
-                    autostartHandlerStart();
-                }
-            }
-        }, 1000);
-    }
-
-    @NonNull
-    private String getAutostartMessage() {
-        return "PAUSE: " + autostartSeconds + " sec.";
-    }
 
     private void updateStats() {
         if (lesson == null) {
@@ -627,4 +571,61 @@ public class MainActivity extends AppCompatActivity
         }
         updateStats();
     }
+
+    @Override
+    protected void onPause() {
+        super.onPause();
+        autostartTimer.onActivityPause();
+    }
+
+    @Override
+    public void onPersistentTimer(PersistentTimer timer, Bundle bundle) {
+        if (lesson == null || isFinishing()) {
+            return;
+        }
+
+        if (timer == autostartTimer) {
+            if (autostartDialog != null && autostartDialog.isShowing()) {
+                autostartDialog.hide();
+                onPlay(null);
+            }
+        } else {
+            throw new RuntimeException("Unknown timer: " + timer);
+        }
+    }
+
+    @Override
+    public void onPersistentTimerTick(PersistentTimer timer, Bundle bundle, int index, int max) {
+        if (lesson == null || isFinishing()) {
+            return;
+        }
+
+        if (timer == autostartTimer) {
+            if (autostartDialog == null) {
+                autostartDialog = new ProgressDialog(this);
+                autostartDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+                autostartDialog.setIndeterminate(true);
+                autostartDialog.setCanceledOnTouchOutside(false);
+                autostartDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+                    @Override
+                    public void onDismiss(DialogInterface dialog) {
+                        autostartTimer.clearTimer();
+                    }
+                });
+            }
+            int secondsLeft = max - index;
+            autostartDialog.setMessage("PAUSE: " + secondsLeft + " sec.");
+            //if (!autostartDialog.isShowing()) {
+                autostartDialog.show();
+            //}
+
+            if (secondsLeft <= 5) {
+                Sound.GET_READY.play(MainActivity.this);
+            }
+
+        } else {
+            throw new RuntimeException("Unknown timer: " + timer);
+        }
+    }
+
 }

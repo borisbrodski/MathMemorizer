@@ -152,7 +152,7 @@ public abstract class MyEditingPreferenceFragment extends MyPreferenceFragment {
             case SECONDS:
                 if (value.getClass() == Integer.class) {
                     editor.putString(pref.getName(), ((Integer) value).toString());
-                } if (value.getClass() == Long.class) {
+                } else if (value.getClass() == Long.class) {
                     editor.putString(pref.getName(), ((Long) value).toString());
                 } else {
                     throw new RuntimeException("Unsupported type: " + value.getClass());
