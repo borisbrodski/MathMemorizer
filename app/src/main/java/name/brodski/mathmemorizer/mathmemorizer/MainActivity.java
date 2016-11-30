@@ -37,15 +37,16 @@ import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
+import java.util.Properties;
 
-import icepick.Icepick;
-import icepick.State;
 import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
 import name.brodski.mathmemorizer.mathmemorizer.data.LessonType;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskGenerator;
 import name.brodski.mathmemorizer.mathmemorizer.preferences.LessonEditActivity;
 import name.brodski.mathmemorizer.mathmemorizer.preferences.SettingsActivity;
+import name.brodski.mathmemorizer.mathmemorizer.tools.BundleTool;
 import name.brodski.mathmemorizer.mathmemorizer.tools.PersistentTimer;
+import name.brodski.mathmemorizer.mathmemorizer.tools.Save;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, PersistentTimer.Listener {
@@ -65,7 +66,7 @@ public class MainActivity extends AppCompatActivity
     private TextView textViewDueQuestions;
     private TextView textViewDebug;
 
-    @State
+    @Save
     Long lessonId;
 
     private Lesson lesson;
@@ -121,15 +122,16 @@ public class MainActivity extends AppCompatActivity
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        Icepick.saveInstanceState(this, outState);
-        autostartTimer.onSaveInstanceState(outState);
+
+        BundleTool.save(this, outState, "main.");
+        autostartTimer.onSaveInstanceState(outState, "autostartTimer.");
     }
 
     @Override
     protected void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        Icepick.restoreInstanceState(this, savedInstanceState);
-        autostartTimer.onRestoreInstanceState(savedInstanceState);
+        BundleTool.load(this, savedInstanceState, "main.");
+        autostartTimer.onRestoreInstanceState(savedInstanceState, "autostartTimer.");
     }
 
     @Override
@@ -579,7 +581,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onPersistentTimer(PersistentTimer timer, Bundle bundle) {
+    public void onPersistentTimer(PersistentTimer timer, Properties bundle) {
         if (lesson == null || isFinishing()) {
             return;
         }
@@ -595,7 +597,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    public void onPersistentTimerTick(PersistentTimer timer, Bundle bundle, int index, int max) {
+    public void onPersistentTimerTick(PersistentTimer timer, Properties bundle, int index, int max) {
         if (lesson == null || isFinishing()) {
             return;
         }

@@ -15,12 +15,17 @@ import android.widget.TableRow;
 
 import java.util.Arrays;
 
+import name.brodski.mathmemorizer.mathmemorizer.tools.BundleTool;
+import name.brodski.mathmemorizer.mathmemorizer.tools.Save;
+
 /**
  * Created by boris on 22.11.16.
  */
 public class PlayKeyPadFragment extends PlayAbstractFragment {
     private CharSequence mAnswer;
+    @Save
     private String mPartialAnswer;
+    @Save
     private boolean mWaitForAnswer;
 
     @Override
@@ -31,12 +36,27 @@ public class PlayKeyPadFragment extends PlayAbstractFragment {
             CharSequence[] choices = getArguments().getCharSequenceArray(ARG_CHOICES);
             int answerIndex = getArguments().getInt(ARG_ANSWER);
             mAnswer = choices[answerIndex];
-            mPartialAnswer = "";
             if (mAnswer.length() == 0) {
                 throw new RuntimeException("answer is empty");
             }
         }
+    }
 
+    @Override
+    public void onActivityCreated(@Nullable Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+        if (savedInstanceState != null) {
+            BundleTool.load(this, savedInstanceState, PlayKeyPadFragment.class.getSimpleName() + ".");
+        } else {
+            mPartialAnswer = "";
+            mWaitForAnswer = true;
+        }
+    }
+
+    @Override
+    public void onResume() {
+        super.onResume();
+        getListener().updatePartialAnswer(mPartialAnswer);
     }
 
     @Override
@@ -47,12 +67,18 @@ public class PlayKeyPadFragment extends PlayAbstractFragment {
         return view;
     }
 
+    @Override
+    public void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+        BundleTool.save(this, outState, PlayKeyPadFragment.class.getSimpleName() + ".");
+    }
+
 
     public void createButtons(View view) {
         TableLayout layout = (TableLayout) view.findViewById(R.id.play_keypad_tablelayout);
 
         final float scale = getContext().getResources().getDisplayMetrics().density;
-        int marginPx = (int) (15 * scale + 0.5f);
+        int marginPx = (int) (10 * scale + 0.5f);
 
 
         boolean zeroBottom = getResources().getConfiguration().orientation != Configuration.ORIENTATION_LANDSCAPE;
@@ -80,8 +106,6 @@ public class PlayKeyPadFragment extends PlayAbstractFragment {
             }
             layout.addView(tableRow);
         }
-
-        mWaitForAnswer = true;
     }
 
     private Button createButton(int marginPx, TableRow tableRow, final String text) {

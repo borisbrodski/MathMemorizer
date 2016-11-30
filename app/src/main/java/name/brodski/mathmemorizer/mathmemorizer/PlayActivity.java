@@ -1,7 +1,6 @@
 package name.brodski.mathmemorizer.mathmemorizer;
 
 import android.os.Bundle;
-import android.os.Handler;
 import android.speech.tts.TextToSpeech;
 import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.Toolbar;
@@ -19,6 +18,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
+import java.util.Properties;
 import java.util.Random;
 import java.util.Set;
 
@@ -26,41 +26,70 @@ import name.brodski.mathmemorizer.mathmemorizer.data.Lesson;
 import name.brodski.mathmemorizer.mathmemorizer.data.LessonType;
 import name.brodski.mathmemorizer.mathmemorizer.data.Task;
 import name.brodski.mathmemorizer.mathmemorizer.data.TaskDao;
+import name.brodski.mathmemorizer.mathmemorizer.tools.BundleTool;
+import name.brodski.mathmemorizer.mathmemorizer.tools.PersistentTimer;
+import name.brodski.mathmemorizer.mathmemorizer.tools.Save;
 
 import static java.lang.Math.max;
 import static java.lang.Math.min;
 import static java.util.Collections.shuffle;
 
-public class PlayActivity extends AppCompatActivity implements PlayMultipleChoiceFragment.OnFragmentInteractionListener{
+public class PlayActivity extends AppCompatActivity implements PlayMultipleChoiceFragment.OnFragmentInteractionListener, PersistentTimer.Listener {
 
     private static final int DIFFERENT_TASK_COUNT = 3;
+    private static final String STATE_NEXT_TASK_ID = PlayActivity.class.getName() + "#nextTaskId";
+
     public static final Random RANDOM = new Random(System.currentTimeMillis());
     public static final int PROGRESS_UPDATES_IN_SEC = 10;
     public static final String LESSON_ID = "LESSON_ID";
+    private static final java.lang.String TIMER_STATE_CORRECT = PlayActivity.class.getName() + "#TimerState.correct";
 
     private Lesson lesson;
     private PlayAbstractFragment fragment;
     private TextView textViewTask;
     private ProgressBar progressBar;
-    private long mDeadline;
-    private long mProgressCounter;
-    private Handler mHandlerWaitingForAnswer = new Handler();
-    private Handler mHandlerOnAnswer = new Handler();
+
+//    private long mDeadline;
+//    private long mProgressCounter;
+
+    private PersistentTimer mWaitForAnswerTimer = new PersistentTimer(this);
+    private PersistentTimer mShowAnswerTimer = new PersistentTimer(this);
+
+//    private Handler mHandlerWaitingForAnswer = new Handler();
+//    private Handler mHandlerOnAnswer = new Handler();
     private TextView textViewDebug;
     private TextView textViewLessonName;
-    private boolean isPaused = true;
-    private int successTaskCount;
-    private int failTaskCount;
-    private TextToSpeech ttobj;
 
-    // ---------- STATE ----------
+    @Save
+    int successTaskCount;
+    @Save
+    int failTaskCount;
+
+
     private Task task;
-    private List<Long> lastTaskIds = new ArrayList<>();
-    private String toSpeak;
-    private String toTaskSpeak;
+
+    @Save
+    int mAnswer;
+    @Save
+    String mAnswerString;
+
+    @Save
+    private List<Long> mLastTaskIds = new ArrayList<>();
+
+    @Save
+    String mTaskText;
+    @Save
+    String mTaskWithAnswerTTS;
+    @Save
+    String mTaskTTS;
+
+    private TextToSpeech ttobj;
     private boolean ttsInitialized;
-    private String toSpeakAfterInitialization;
-    private String correctAnswer;
+
+    @Save
+    String toSpeakAfterInitialization;
+    @Save
+    private List<String> mChoicesList;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -111,15 +140,21 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             }
         }, "com.google.android.tts");
 
-        task = nextTask();
-        showTask();
+        if (savedInstanceState != null && savedInstanceState.containsKey(STATE_NEXT_TASK_ID)) {
+            long taskId = savedInstanceState.getLong(STATE_NEXT_TASK_ID);
+            task = DB.getDaoSession().getTaskDao().load(taskId);
+            fragment = (PlayAbstractFragment) getSupportFragmentManager().getFragment(savedInstanceState, "fragment");
+        } else {
+            task = nextTask();
+            initTask();
+        }
+
     }
 
-    public void showTask() {
+    public void initTask() {
         if (task == null) {
             return;
         }
-        StringBuilder sb = new StringBuilder();
         int op1;
         int op2;
         if (lesson.getType() == LessonType.DIVISION || RANDOM.nextBoolean()) {
@@ -130,34 +165,31 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             op2 = task.getOperand1();
         }
 
-        int result;
-
-
         switch (lesson.getType()) {
             case MULTIPLICATION:
-                result = op1 * op2;
+                mAnswer = op1 * op2;
 
-                toTaskSpeak = ""  + op1 + " mal " + op2;
-                toSpeak = ""  + op1 + " mal " + op2 + " ist " + result;
-                textViewTask.setText("" + op1 + " * " + op2 + " = ?");
+                mTaskTTS = ""  + op1 + " mal " + op2;
+                mTaskWithAnswerTTS = ""  + op1 + " mal " + op2 + " ist " + mAnswer;
+                mTaskText = "" + op1 + " * " + op2 + " = ";
                 break;
             case DIVISION:
-                result = op1 / op2;
-                toTaskSpeak = ""  + op1 + " durch " + op2;
-                toSpeak = ""  + op1 + " durch " + op2 + " ist " + result;
-                textViewTask.setText("" + op1 + " : " + op2 + " = ?");
+                mAnswer = op1 / op2;
+                mTaskTTS = ""  + op1 + " geteilt durch " + op2;
+                mTaskWithAnswerTTS = ""  + op1 + " durch " + op2 + " ist " + mAnswer;
+                mTaskText = "" + op1 + " : " + op2 + " = ";
                 break;
             default:
                 throw new RuntimeException("Unknown " + lesson.getType());
         }
-        correctAnswer = "" + result;
+
         Set<String> choices = new HashSet<>();
-        addChoice(choices, result - 3);
-        addChoice(choices, result - 2);
-        addChoice(choices, result - 1);
-        addChoice(choices, result + 1);
-        addChoice(choices, result + 2);
-        addChoice(choices, result + 3);
+        addChoice(choices, mAnswer - 3);
+        addChoice(choices, mAnswer - 2);
+        addChoice(choices, mAnswer - 1);
+        addChoice(choices, mAnswer + 1);
+        addChoice(choices, mAnswer + 2);
+        addChoice(choices, mAnswer + 3);
 
         for (int i = 0; i < 7; i++) {
             int from;
@@ -165,7 +197,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             switch (lesson.getType()) {
                 case MULTIPLICATION:
                     from = 2 * max(op1, op2);
-                    to = max(from, min(100, result * 2));
+                    to = max(from, min(100, mAnswer * 2));
                     break;
                 case DIVISION:
                     from = 1;
@@ -176,31 +208,30 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             }
 
             int value = from + RANDOM.nextInt(to - from + 1);
-            if (value != result) {
+            if (value != mAnswer) {
                 addChoice(choices, value);
             }
         }
-
         int count;
-
+        long timeout;
         if (task.getScore() >= lesson.getLevel3MinScore()) {
             // Level 3
-            count = 6;
-            mDeadline = lesson.getLevel3Millis();
+            count = 1;
+            timeout = lesson.getLevel3Millis();
             if (lesson.isLessonTTSQuestionLevel3()) {
                 speakTask();
             }
         } else if (task.getScore() >= lesson.getLevel2MinScore()) {
             // Level 2
             count = 6;
-            mDeadline = lesson.getLevel2Millis();
+            timeout = lesson.getLevel2Millis();
             if (lesson.isLessonTTSQuestionLevel2()) {
                 speakTask();
             }
         } else {
             // Level 1
             count = 4;
-            mDeadline = lesson.getLevel1Millis();
+            timeout = lesson.getLevel1Millis();
             if (lesson.isLessonTTSQuestionLevel1()) {
                 speakTask();
             }
@@ -210,66 +241,74 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             count = 4;
         }
 
-        mProgressCounter = 0;
 
+        mChoicesList = new ArrayList<>(choices);
+        shuffle(mChoicesList, RANDOM);
 
-        List<String> choicesList = new ArrayList<>(choices);
-        shuffle(choicesList, RANDOM);
+        mChoicesList = new ArrayList<>(mChoicesList.subList(0, count - 1));
+        addChoice(mChoicesList, mAnswer);
+        mAnswerString = mChoicesList.get(mChoicesList.size() - 1);
+        shuffle(mChoicesList, RANDOM);
 
-        choicesList = choicesList.subList(0, count - 1);
-        addChoice(choicesList, result);
-        String resultString = choicesList.get(choicesList.size() - 1);
-        shuffle(choicesList, RANDOM);
+        mWaitForAnswerTimer.schedule(timeout, null, (int)(timeout / 1000 * PROGRESS_UPDATES_IN_SEC));
 
-        fragment = PlayAbstractFragment.newInstance(new PlayKeyPadFragment(), choicesList.toArray(new CharSequence[0]), choicesList.indexOf(resultString));
-        // fragment = PlayAbstractFragment.newInstance(new PlayMultipleChoiceFragment(), choicesList.toArray(new CharSequence[0]), choicesList.indexOf(resultString));
+        fragment = null;
+    }
+
+    public void showTask() {
+        updatePartialAnswer("");
+
+        if (fragment == null) {
+            if (mChoicesList.size() == 1) {
+                fragment = PlayAbstractFragment.newInstance(new PlayKeyPadFragment(), mChoicesList.toArray(new CharSequence[0]), mChoicesList.indexOf(mAnswerString));
+            } else {
+                fragment = PlayAbstractFragment.newInstance(new PlayMultipleChoiceFragment(), mChoicesList.toArray(new CharSequence[0]), mChoicesList.indexOf(mAnswerString));
+            }
+        }
         getSupportFragmentManager().beginTransaction().replace(R.id.fragment_container_choice, fragment).commitAllowingStateLoss();
-
-        progressBar.setProgress(0);
-        progressBar.setVisibility(View.VISIBLE);
-        setupProgressHandler();
     }
 
     @Override
     protected void onPause() {
-        isPaused = true;
         super.onPause();
+        mWaitForAnswerTimer.onActivityPause();
+        mShowAnswerTimer.onActivityPause();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        isPaused = false;
-        setupProgressHandler();
+        mWaitForAnswerTimer.onActivityResume();
+        mShowAnswerTimer.onActivityResume();
+
+        showTask();
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        super.onSaveInstanceState(outState);
+
+        mWaitForAnswerTimer.onSaveInstanceState(outState, "mWaitForAnswerTimer.");
+        mShowAnswerTimer.onSaveInstanceState(outState, "mShowAnswerTimer.");
+
+        BundleTool.save(this, outState, PlayActivity.class.getSimpleName() + ".");
+        if (task != null) {
+            outState.putLong(STATE_NEXT_TASK_ID, task.getId());
+        }
+        getSupportFragmentManager().putFragment(outState, "fragment", fragment);
+    }
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        BundleTool.load(this, savedInstanceState, PlayActivity.class.getSimpleName() + ".");
+
+        mWaitForAnswerTimer.onRestoreInstanceState(savedInstanceState, "mWaitForAnswerTimer.");
+        mShowAnswerTimer.onRestoreInstanceState(savedInstanceState, "mShowAnswerTimer.");
     }
 
     @Override
     protected void onStop() {
         super.onStop();
-    }
-
-    public void setupProgressHandler() {
-        mHandlerWaitingForAnswer.removeCallbacksAndMessages(null);
-        mHandlerWaitingForAnswer.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (mDeadline == 0 || isPaused || isFinishing()) {
-                    return;
-                }
-                if (mDeadline <= mProgressCounter) {
-                    timeout();
-                } else {
-                    mProgressCounter += 1000 / PROGRESS_UPDATES_IN_SEC;
-                    progressBar.setProgress((int)(100 *  mProgressCounter / mDeadline));
-                    setupProgressHandler();
-                }
-            }
-        }, 1000 / PROGRESS_UPDATES_IN_SEC);
-    }
-
-    public void stopProgressHandler() {
-        mHandlerWaitingForAnswer.removeCallbacksAndMessages(null);
-        progressBar.setVisibility(View.INVISIBLE);
     }
 
     private void addChoice(Collection<String> choices, int choice) {
@@ -309,9 +348,9 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
             sb.append(new SimpleDateFormat("HH:mm:ss (MM.dd)").format(new Date(result.getDue())));
 
             textViewDebug.setText(sb.toString());
-            lastTaskIds.add(result.getId());
-            if (lastTaskIds.size() > DIFFERENT_TASK_COUNT) {
-                lastTaskIds = lastTaskIds.subList(lastTaskIds.size() - DIFFERENT_TASK_COUNT, lastTaskIds.size());
+            mLastTaskIds.add(result.getId());
+            if (mLastTaskIds.size() > DIFFERENT_TASK_COUNT) {
+                mLastTaskIds = mLastTaskIds.subList(mLastTaskIds.size() - DIFFERENT_TASK_COUNT, mLastTaskIds.size());
             }
         }
 
@@ -322,8 +361,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         QueryBuilder<Task> builder = DB.getDaoSession().getTaskDao().queryBuilder();
         builder.where(TaskDao.Properties.LessonId.eq(lesson.getId()));
         builder.where(TaskDao.Properties.Due.notEq(0L));
-        if (lastTaskIds.size() > 0) {
-            builder.where(TaskDao.Properties.Id.notIn(lastTaskIds));
+        if (mLastTaskIds.size() > 0) {
+            builder.where(TaskDao.Properties.Id.notIn(mLastTaskIds));
         }
         if (!includeFuture) {
             builder.where(TaskDao.Properties.Due.lt(System.currentTimeMillis()));
@@ -342,8 +381,8 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         QueryBuilder<Task> builder = DB.getDaoSession().getTaskDao().queryBuilder();
         builder.where(TaskDao.Properties.LessonId.eq(lesson.getId()));
         builder.where(TaskDao.Properties.LastShow.eq(0L));
-        if (lastTaskIds.size() > 0) {
-            builder.where(TaskDao.Properties.Id.notIn(lastTaskIds));
+        if (mLastTaskIds.size() > 0) {
+            builder.where(TaskDao.Properties.Id.notIn(mLastTaskIds));
         }
         builder.orderAsc(TaskDao.Properties.Order);
         builder.limit(1);
@@ -363,24 +402,20 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
         if (isFinishing()) {
             return;
         }
-        updateAnswer(correctAnswer);
-        stopProgressHandler();
-        mHandlerOnAnswer.removeCallbacksAndMessages(null);
+        mWaitForAnswerTimer.clearTimer();
+        progressBar.setVisibility(View.INVISIBLE);
+
+        updateAnswer(mAnswerString);
+
         long timeout;
         if (correct) {
             timeout = lesson.getCorrectAnswerPauseMillis();
         } else {
             timeout = lesson.getWrongAnswerPauseMillis();
         }
-        mHandlerOnAnswer.postDelayed(new Runnable() {
-            @Override
-            public void run() {
-                if (isFinishing()) {
-                    return;
-                }
-                taskFinished(correct);
-            }
-        }, timeout);
+        Properties properties = new Properties();
+        properties.setProperty(TIMER_STATE_CORRECT, "" + correct);
+        mShowAnswerTimer.schedule(timeout, properties);
     }
     public void taskFinished(boolean correct) {
         if (correct) {
@@ -424,6 +459,7 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
 
         if ((successTaskCount + failTaskCount) < lesson.getTasksPerSession()) {
             task = nextTask();
+            initTask();
             showTask();
         } else {
             setResult(MainActivity.RESULT_AUTOSTART);
@@ -433,12 +469,12 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
 
     public void speakAnswer() {
         if (lesson.isLessonTTSOnWrongAnswer()) {
-            speak(toSpeak);
+            speak(mTaskWithAnswerTTS);
         }
     }
 
     public void speakTask() {
-        speak(toTaskSpeak);
+        speak(mTaskTTS);
     }
     public synchronized void speak(String text) {
         if (!ttsInitialized) {
@@ -457,11 +493,28 @@ public class PlayActivity extends AppCompatActivity implements PlayMultipleChoic
     }
 
     private void updateAnswer(String answer) {
-        String task = textViewTask.getText().toString();
-        int i = task.indexOf('=');
-        if (i < 0) {
-            throw new RuntimeException("Task doesn't contain '='");
+        textViewTask.setText(mTaskText + answer);
+    }
+
+    @Override
+    public void onPersistentTimer(PersistentTimer timer, Properties properties) {
+        if (isFinishing()) {
+            return;
         }
-        textViewTask.setText(task.substring(0, i) + "= " + answer);
+        if (timer == mShowAnswerTimer) {
+            taskFinished(Boolean.valueOf(properties.getProperty(TIMER_STATE_CORRECT)));
+        }
+        if (timer == mWaitForAnswerTimer) {
+            progressBar.setVisibility(View.INVISIBLE);
+            timeout();
+        }
+    }
+
+    @Override
+    public void onPersistentTimerTick(PersistentTimer timer, Properties properties, int index, int max) {
+        if (timer == mWaitForAnswerTimer) {
+            progressBar.setVisibility(View.VISIBLE);
+            progressBar.setProgress(index * 100 / max);
+        }
     }
 }

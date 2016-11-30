@@ -5,34 +5,30 @@ import android.content.Context;
 import android.os.Bundle;
 import android.os.Handler;
 
-import icepick.Icepick;
-import icepick.State;
+import java.util.Properties;
 
 /**
  * Created by boris on 23.11.16.
  */
-
 public class PersistentTimer {
     private Listener listener;
 
     public interface Listener {
-        void onPersistentTimer(PersistentTimer timer, Bundle bundle);
-        void onPersistentTimerTick(PersistentTimer timer, Bundle bundle, int index, int max);
+        void onPersistentTimer(PersistentTimer timer, Properties bundle);
+        void onPersistentTimerTick(PersistentTimer timer, Properties bundle, int index, int max);
     }
 
     // STATE
-    @State
+    @Save
     long autorestoreForMS;
-    Bundle bundle;
-    @State
+    @Save
+    Properties bundle;
+    @Save
     long tickMS;
-    @State
+    @Save
     int tickCount;
-    @State
+    @Save
     int tickCurrent;
-
-
-
 
     // Temporary variables
     private final Handler handler = new Handler();
@@ -76,11 +72,11 @@ public class PersistentTimer {
         this.paused = false;
     }
 
-    public void schedule(long durationMS, final Bundle bundle) {
+    public void schedule(long durationMS, final Properties bundle) {
         schedule(durationMS, bundle, 1);
     }
 
-    public void schedule(long durationMS, final Bundle bundle, int tickCount) {
+    public void schedule(long durationMS, final Properties bundle, int tickCount) {
         clearTimer();
 
         this.tickCount = Math.max(1, tickCount);
@@ -121,15 +117,14 @@ public class PersistentTimer {
         autorestoreForMS = 0;
     }
 
-    public void onSaveInstanceState(Bundle outState) {
+    public void onSaveInstanceState(Bundle outState, String prefix) {
         if (!paused) {
             onActivityPause();
         }
-        Icepick.saveInstanceState(this, outState);
-
+        BundleTool.save(this, outState, prefix);
     }
-    public void onRestoreInstanceState(Bundle savedInstanceState) {
-        Icepick.restoreInstanceState(this, savedInstanceState);
+    public void onRestoreInstanceState(Bundle savedInstanceState, String prefix) {
+        BundleTool.load(this, savedInstanceState, prefix);
         timerActive = autorestoreForMS > 0;
         paused = true;
     }
